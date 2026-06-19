@@ -1,0 +1,1119 @@
+[
+  {
+    "id": "chevening",
+    "title": "Chevening Scholarship",
+    "funder": "UK Foreign, Commonwealth & Development Office",
+    "country": "UK",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, monthly stipend, flights, arrival allowance",
+    "deadline": "2026-11-01",
+    "eligibility": [
+      "Citizen of a Chevening-eligible country",
+      "Undergraduate degree equivalent to UK upper second-class honours",
+      "At least two years of work experience",
+      "Leadership potential and strong academic background",
+      "Commitment to return home for at least two years"
+    ],
+    "requiredDocs": [
+      "Valid international passport",
+      "University degree certificate/transcript",
+      "Two reference letters",
+      "Offer letter from a UK university (by the deadline)",
+      "English proficiency test result"
+    ],
+    "description": "Prestigious UK government scholarship for future leaders to study a one-year taught Master's at any UK university.",
+    "url": "https://www.chevening.org/"
+  },
+  {
+    "id": "commonwealth",
+    "title": "Commonwealth Shared Scholarship",
+    "funder": "Commonwealth Scholarship Commission (UK)",
+    "country": "UK",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, living allowance, travel costs, thesis grant",
+    "deadline": "2026-12-12",
+    "eligibility": [
+      "Citizen of an eligible Commonwealth country and permanent resident",
+      "First degree of at least upper second class",
+      "Unable to afford study in the UK without this scholarship",
+      "Applying for an eligible taught Master's program"
+    ],
+    "requiredDocs": [
+      "Academic transcript",
+      "References from two academic/professional referees",
+      "Supporting statement of motivation",
+      "Scan of passport or national ID"
+    ],
+    "description": "For talented individuals from Commonwealth countries who would not otherwise afford UK study.",
+    "url": "https://cscuk.fcdo.gov.uk/apply/"
+  },
+  {
+    "id": "commonwealth-phd",
+    "title": "Commonwealth PhD Scholarships",
+    "funder": "Commonwealth Scholarship Commission (UK)",
+    "country": "UK",
+    "degreeLevel": "PhD",
+    "amount": "Full tuition, living allowance, travel, research support grant",
+    "deadline": "2026-10-14",
+    "eligibility": [
+      "Citizen of a least developed or vulnerable Commonwealth country",
+      "First degree of at least upper second class",
+      "Not registered for a PhD at a UK university before September 2027",
+      "Unable to afford to study in the UK without this scholarship"
+    ],
+    "requiredDocs": [
+      "Academic transcripts",
+      "References from two academic referees",
+      "Supporting statement",
+      "Research proposal",
+      "Scan of passport"
+    ],
+    "description": "Full-time doctoral study at a UK university for candidates from least developed Commonwealth countries.",
+    "url": "https://cscuk.fcdo.gov.uk/apply/"
+  },
+  {
+    "id": "fulbright",
+    "title": "Fulbright Foreign Student Program",
+    "funder": "U.S. Department of State",
+    "country": "US",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, health insurance, living stipend, airfare",
+    "deadline": "2026-10-15",
+    "eligibility": [
+      "Citizen of an eligible country resident in home country",
+      "Bachelor's degree completed before program start",
+      "Strong academic record and English proficiency",
+      "Commitment to return home after study"
+    ],
+    "requiredDocs": [
+      "Completed online application",
+      "Academic transcripts and degree certificate",
+      "Three letters of recommendation",
+      "Statement of purpose",
+      "CV/resume"
+    ],
+    "description": "U.S. flagship program supporting graduate study and research for international students.",
+    "url": "https://foreign.fulbrightonline.org/"
+  },
+  {
+    "id": "mastercard",
+    "title": "Mastercard Foundation Scholars Program",
+    "funder": "Mastercard Foundation",
+    "country": "US",
+    "degreeLevel": "Bachelor's / Master's",
+    "amount": "Full financial support including tuition, housing, and mentoring",
+    "deadline": "2026-11-30",
+    "eligibility": [
+      "Young African demonstrating academic talent and leadership",
+      "Strong financial need",
+      "Applying to a partner U.S. or African institution",
+      "Commitment to giving back to community"
+    ],
+    "requiredDocs": [
+      "Academic records",
+      "Financial need documentation",
+      "Essays on leadership and community service",
+      "Recommendation letters",
+      "Proof of English proficiency"
+    ],
+    "description": "Comprehensive scholarship for academically talented yet economically disadvantaged young people.",
+    "url": "https://mastercardfdn.org/all-programs/scholars-program/"
+  },
+  {
+    "id": "daad",
+    "title": "DAAD EPOS Scholarship",
+    "funder": "German Academic Exchange Service (DAAD)",
+    "country": "Germany",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, monthly stipend, travel allowance, insurance",
+    "deadline": "2026-08-31",
+    "eligibility": [
+      "Professional from a developing or emerging country with a Bachelor's degree",
+      "At least two years of relevant work experience",
+      "Development-related discipline preferred",
+      "Strong motivation to contribute to national development"
+    ],
+    "requiredDocs": [
+      "DAAD application form",
+      "Motivation letter (max 3 pages)",
+      "Full CV",
+      "Two professional reference letters",
+      "Employer's recommendation"
+    ],
+    "description": "German government-funded scholarship for professionals from developing countries pursuing development-focused Master's degrees.",
+    "url": "https://www.daad.de/en/study-and-research-in-germany/scholarships/daad-development-related-postgraduate-courses/"
+  },
+  {
+    "id": "heinrich",
+    "title": "Heinrich Boll Foundation Scholarship",
+    "funder": "Heinrich Boll Foundation (Germany)",
+    "country": "Germany",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, monthly stipend, mobility allowance",
+    "deadline": "2026-09-01",
+    "eligibility": [
+      "International student committed to green/social values",
+      "Outstanding academic record",
+      "Active engagement in social or environmental causes",
+      "University admission or application in progress"
+    ],
+    "requiredDocs": [
+      "Online application form",
+      "Motivation letter",
+      "Project proposal (for research students)",
+      "Two references",
+      "Language proficiency proof"
+    ],
+    "description": "For students and doctoral candidates who stand up for green and social ideals in Germany.",
+    "url": "https://www.boell.de/en/foundation/scholarship"
+  },
+  {
+    "id": "vanier",
+    "title": "Vanier Canada Graduate Scholarship",
+    "funder": "Government of Canada",
+    "country": "Canada",
+    "degreeLevel": "PhD",
+    "amount": "CAD $50,000 per year for up to three years",
+    "deadline": "2026-11-15",
+    "eligibility": [
+      "Nominated by a Canadian institution",
+      "Pursuing a doctoral degree (PhD)",
+      "Exceptional academic achievement and research potential",
+      "Leadership skills and community involvement"
+    ],
+    "requiredDocs": [
+      "Research proposal",
+      "Leadership statement",
+      "Two leadership reference letters",
+      "Transcripts",
+      "Nomination by institution"
+    ],
+    "description": "Canada's most prestigious doctoral scholarship, awarded to students who demonstrate leadership and research excellence.",
+    "url": "https://vanier.gc.ca/"
+  },
+  {
+    "id": "idrc",
+    "title": "IDRC Research Awards",
+    "funder": "International Development Research Centre (Canada)",
+    "country": "Canada",
+    "degreeLevel": "Master's / PhD",
+    "amount": "CAD $20,000-$40,000 research grant plus travel support",
+    "deadline": "2026-09-30",
+    "eligibility": [
+      "Citizen of a developing country enrolled in a Master's or PhD program",
+      "Research aligned with IDRC thematic priorities",
+      "Strong academic background",
+      "Ability to conduct fieldwork in development context"
+    ],
+    "requiredDocs": [
+      "Research proposal",
+      "Academic transcripts",
+      "Supervisor support letter",
+      "CV",
+      "Budget narrative"
+    ],
+    "description": "Canadian research awards supporting development-focused graduate research in low- and middle-income countries.",
+    "url": "https://www.idrc.ca/en/funding"
+  },
+  {
+    "id": "erasmus-mundus",
+    "title": "Erasmus Mundus Joint Masters Scholarship",
+    "funder": "European Commission",
+    "country": "Netherlands",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, monthly stipend EUR 1,400-1,500, travel, visa, insurance",
+    "deadline": "2027-01-15",
+    "eligibility": [
+      "Citizen of any country (EU or non-EU)",
+      "Bachelor's degree or final-year student before programme start",
+      "Meet academic and language requirements of chosen programme",
+      "Not previously awarded an Erasmus Mundus scholarship"
+    ],
+    "requiredDocs": [
+      "Online application form",
+      "CV (Europass recommended)",
+      "Motivation letter",
+      "Academic transcripts and degree certificates",
+      "Two to three recommendation letters",
+      "Proof of language proficiency",
+      "Copy of passport"
+    ],
+    "description": "Prestigious EU-funded master's programme allowing students to study at multiple European universities with full financial support.",
+    "url": "https://erasmus-plus.ec.europa.eu/opportunities/opportunities-for-individuals/students/erasmus-mundus-joint-masters"
+  },
+  {
+    "id": "australia-awards",
+    "title": "Australia Awards Scholarships",
+    "funder": "Australian Government (DFAT)",
+    "country": "Australia",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, return airfare, living allowance, health insurance, establishment allowance",
+    "deadline": "2027-04-30",
+    "eligibility": [
+      "Citizen of an eligible country in Africa, Asia, Pacific, or Middle East",
+      "At least 18 years old by 1 February of intake year",
+      "Not an Australian citizen or permanent resident",
+      "Commitment to return home for at least two years after study"
+    ],
+    "requiredDocs": [
+      "Proof of citizenship",
+      "Academic transcripts",
+      "English language test results",
+      "Development impact statement",
+      "Work experience certificates"
+    ],
+    "description": "Long-term development awards for citizens of partner countries to undertake full-time study in Australia.",
+    "url": "https://www.dfat.gov.au/people-to-people/australia-awards/australia-awards-scholarships"
+  },
+  {
+    "id": "eiffel",
+    "title": "Eiffel Excellence Scholarship Programme",
+    "funder": "French Ministry for Europe and Foreign Affairs",
+    "country": "France",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Monthly allowance EUR 1,181-1,700, travel, health insurance, housing allowance",
+    "deadline": "2026-11-30",
+    "eligibility": [
+      "Citizen of a non-French country",
+      "Under 25 years old for Master's, under 30 for PhD",
+      "Applying to a French higher education institution",
+      "Outstanding academic record"
+    ],
+    "requiredDocs": [
+      "Application form via French institution",
+      "Academic transcripts",
+      "Motivation letter",
+      "CV",
+      "Language proficiency proof"
+    ],
+    "description": "French government scholarship attracting top international students to enrol in Master's and PhD programmes in France.",
+    "url": "https://www.campusfrance.org/en/eiffel-scholarship-program"
+  },
+  {
+    "id": "gates-cambridge",
+    "title": "Gates Cambridge Scholarship",
+    "funder": "Bill & Melinda Gates Foundation",
+    "country": "UK",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, maintenance allowance, travel, visa, family allowance",
+    "deadline": "2026-12-01",
+    "eligibility": [
+      "Citizen of any country outside the United Kingdom",
+      "Applying to pursue a full-time postgraduate degree at Cambridge",
+      "Outstanding intellectual ability",
+      "Leadership potential and commitment to improving lives"
+    ],
+    "requiredDocs": [
+      "Cambridge admission application",
+      "Gates Cambridge statement",
+      "Research proposal (PhD)",
+      "Two academic references",
+      "CV"
+    ],
+    "description": "Full-cost scholarship for outstanding applicants from countries outside the UK to pursue postgraduate study at Cambridge.",
+    "url": "https://www.gatescambridge.org/"
+  },
+  {
+    "id": "rhodes",
+    "title": "Rhodes Scholarship",
+    "funder": "Rhodes Trust",
+    "country": "UK",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, living stipend, flights, settling-in allowance",
+    "deadline": "2026-10-01",
+    "eligibility": [
+      "Citizen of an eligible constituency worldwide",
+      "Age 18-23 (or up to 28 for certain constituencies)",
+      "Completed undergraduate degree with first-class or equivalent",
+      "Exceptional intellect, character, leadership, and commitment to service"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Personal statement",
+      "Academic transcripts",
+      "Five to eight references",
+      "Evidence of leadership and service"
+    ],
+    "description": "One of the world's oldest and most prestigious international scholarship programmes for study at Oxford University.",
+    "url": "https://www.rhodeshouse.ox.ac.uk/"
+  },
+  {
+    "id": "schwarzman",
+    "title": "Schwarzman Scholars Program",
+    "funder": "Stephen A. Schwarzman Education Foundation",
+    "country": "China",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, room and board, travel, stipend, books, health insurance",
+    "deadline": "2026-09-10",
+    "eligibility": [
+      "Bachelor's degree or equivalent by 1 August 2027",
+      "Age 18-28 years old",
+      "Strong English proficiency",
+      "Leadership potential and understanding of China's global role"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Transcripts",
+      "Resume/CV",
+      "Essays",
+      "Three letters of recommendation",
+      "Video introduction"
+    ],
+    "description": "One-year Master's programme at Tsinghua University in Beijing focused on global affairs, leadership, and China.",
+    "url": "https://www.schwarzmanscholars.org/"
+  },
+  {
+    "id": "knight-hennessy",
+    "title": "Knight-Hennessy Scholars",
+    "funder": "Stanford University",
+    "country": "US",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, fees, living stipend, travel, academic enrichment funds",
+    "deadline": "2026-12-09",
+    "eligibility": [
+      "Applying to any full-time Stanford graduate degree programme",
+      "Bachelor's degree completed in 2020 or later",
+      "Demonstrated leadership, civic mindset, and independent thought",
+      "English proficiency"
+    ],
+    "requiredDocs": [
+      "Knight-Hennessy application",
+      "Stanford graduate programme application",
+      "Two recommendation letters",
+      "Essays",
+      "Video story"
+    ],
+    "description": "Stanford's flagship graduate fellowship preparing leaders to address complex global challenges.",
+    "url": "https://knight-hennessy.stanford.edu/"
+  },
+  {
+    "id": "swiss-government",
+    "title": "Swiss Government Excellence Scholarships",
+    "funder": "Swiss Government",
+    "country": "Switzerland",
+    "degreeLevel": "Master's / PhD / Postdoc",
+    "amount": "Monthly stipend, tuition waiver, health insurance, housing allowance",
+    "deadline": "2026-12-31",
+    "eligibility": [
+      "Holder of a university degree from a foreign country",
+      "Nominated by national authority or Swiss diplomatic mission",
+      "Research proposal accepted by a Swiss professor",
+      "Born after 31 December 1991 for Master's"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Research proposal or letter of motivation",
+      "Academic transcripts and diplomas",
+      "Two reference letters",
+      "Letter of support from Swiss host professor"
+    ],
+    "description": "Swiss government-funded scholarships for international researchers and artists to pursue research or further studies in Switzerland.",
+    "url": "https://www.sbfi.admin.ch/sbfi/en/home/education/scholarships-and-grants/swiss-government-excellence-scholarships.html"
+  },
+  {
+    "id": "mext",
+    "title": "Japanese Government (MEXT) Scholarship",
+    "funder": "Ministry of Education, Culture, Sports, Science and Technology (Japan)",
+    "country": "Japan",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, monthly allowance, travel to and from Japan",
+    "deadline": "2027-05-31",
+    "eligibility": [
+      "Citizen of a country with diplomatic relations with Japan",
+      "Born on or after 2 April 1991 for graduate",
+      "Completed required previous education",
+      "Willing to learn Japanese"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Academic transcripts",
+      "Graduation certificate",
+      "Recommendation letter",
+      "Research plan",
+      "Medical certificate"
+    ],
+    "description": "Japanese government scholarship for international students to study at Japanese universities as teacher-training or research students.",
+    "url": "https://www.mext.go.jp/en/policy/education/highered/title02/detail02/1374070_002.html"
+  },
+  {
+    "id": "gks",
+    "title": "Global Korea Scholarship (GKS)",
+    "funder": "National Institute for International Education (Korea)",
+    "country": "South Korea",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, monthly stipend, airfare, Korean language training, medical insurance",
+    "deadline": "2027-02-28",
+    "eligibility": [
+      "Citizen of a country invited by the Korean government",
+      "Bachelor's or Master's degree by programme start",
+      "Under 40 years of age",
+      "Good health and English/Korean proficiency"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Personal statement",
+      "Study plan",
+      "Two recommendation letters",
+      "Academic transcripts",
+      "Proof of language proficiency"
+    ],
+    "description": "Korean government scholarship for international students to pursue graduate study and research in South Korea.",
+    "url": "https://www.studyinkorea.go.kr/"
+  },
+  {
+    "id": "csc",
+    "title": "Chinese Government Scholarship (CSC)",
+    "funder": "China Scholarship Council",
+    "country": "China",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, accommodation, monthly stipend, medical insurance",
+    "deadline": "2027-04-01",
+    "eligibility": [
+      "Non-Chinese citizen in good health",
+      "Bachelor's, Master's, or PhD applicant meeting programme requirements",
+      "Not holding another Chinese government scholarship",
+      "Language proficiency (Chinese or English)"
+    ],
+    "requiredDocs": [
+      "CSC online application",
+      "University online application",
+      "Notarised highest diploma and transcripts",
+      "Study plan or research proposal",
+      "Two recommendation letters",
+      "Physical examination form"
+    ],
+    "description": "Chinese government scholarship for international students to study at Chinese universities through bilateral or designated university programmes.",
+    "url": "https://www.campuschina.org/"
+  },
+  {
+    "id": "turkey-burslari",
+    "title": "Türkiye Burslari Scholarship",
+    "funder": "Presidency for Turks Abroad and Related Communities",
+    "country": "Turkey",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, monthly stipend, accommodation, flights, health insurance, language course",
+    "deadline": "2027-02-20",
+    "eligibility": [
+      "Citizen of any country except Turkey",
+      "Not enrolled in a Turkish institution at the time of application",
+      "Meet age and graduation requirements for level",
+      "Good academic record and health"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Transcripts",
+      "Diploma or graduation certificate",
+      "Passport",
+      "Recommendation letters"
+    ],
+    "description": "Turkish government scholarship for international students to study full-time at Turkish universities across all levels.",
+    "url": "https://tbbs.turkiyeburslari.gov.tr/"
+  },
+  {
+    "id": "aga-khan",
+    "title": "Aga Khan Foundation International Scholarship",
+    "funder": "Aga Khan Foundation",
+    "country": "UK",
+    "degreeLevel": "Master's",
+    "amount": "Tuition and living expenses (50% grant, 50% loan)",
+    "deadline": "2026-10-31",
+    "eligibility": [
+      "Citizen of an eligible developing country",
+      "Excellent academic record and genuine financial need",
+      "Admission to a reputable postgraduate institution",
+      "Commitment to return to country of origin"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Academic transcripts",
+      "Letter of admission",
+      "Financial need documentation",
+      "References"
+    ],
+    "description": "Highly competitive scholarship providing postgraduate support to outstanding students from developing countries.",
+    "url": "https://the.akdn/en/our-agencies/aga-khan-foundation"
+  },
+  {
+    "id": "jjwbgsp",
+    "title": "Joint Japan/World Bank Graduate Scholarship Program",
+    "funder": "World Bank + Government of Japan",
+    "country": "Japan",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, monthly living stipend, round-trip airfare, health insurance",
+    "deadline": "2027-05-26",
+    "eligibility": [
+      "Citizen of a World Bank member developing country",
+      "Bachelor's degree earned at least 3 years before application",
+      "At least 3 years of recent development-related employment",
+      "Not a dual citizen of any developed country"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Academic transcripts",
+      "CV",
+      "Employment records",
+      "Two recommendation letters",
+      "Admission letter to preferred programme"
+    ],
+    "description": "Scholarship for mid-career professionals from developing countries to pursue development-related graduate studies.",
+    "url": "https://www.worldbank.org/en/programs/scholarships"
+  },
+  {
+    "id": "jads",
+    "title": "Japan Africa Dream Scholarship (JADS)",
+    "funder": "African Development Bank + Government of Japan",
+    "country": "Japan",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, monthly stipend, round-trip airfare, health insurance",
+    "deadline": "2027-01-09",
+    "eligibility": [
+      "Citizen of an AfDB member country with strong academic background",
+      "Bachelor's degree in energy, agriculture, health, engineering, or related field",
+      "At least 1 year of relevant work experience",
+      "Admission to a participating Japanese university"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Academic transcripts",
+      "Degree certificate",
+      "CV",
+      "Recommendation letter",
+      "Statement of purpose"
+    ],
+    "description": "Capacity-building programme supporting African professionals to earn Master's degrees at Japanese universities.",
+    "url": "https://www.afdb.org/en/topics-and-sectors/initiatives-partnerships/japan-africa-dream-scholarship-programme"
+  },
+  {
+    "id": "ireland-goi",
+    "title": "Government of Ireland International Education Scholarship",
+    "funder": "Government of Ireland",
+    "country": "Ireland",
+    "degreeLevel": "Master's / PhD",
+    "amount": "EUR 10,000 stipend plus full tuition waiver",
+    "deadline": "2027-03-16",
+    "eligibility": [
+      "Non-EU/EEA citizen",
+      "Offer of admission to an eligible Irish higher education institution",
+      "Excellent academic record",
+      "Engagement with Ireland as a study destination"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Offer letter from Irish institution",
+      "Academic transcripts",
+      "Personal statement",
+      "References"
+    ],
+    "description": "Irish government scholarship for high-achieving international students to undertake a one-year taught Master's or research programme in Ireland.",
+    "url": "https://www.gov.ie/en/publication/93d7f-government-of-ireland-international-education-scholarships-2025/"
+  },
+  {
+    "id": "great-uk",
+    "title": "GREAT Scholarships UK",
+    "funder": "UK Government + British Council",
+    "country": "UK",
+    "degreeLevel": "Master's",
+    "amount": "GBP 10,000 towards tuition fees",
+    "deadline": "2027-04-30",
+    "eligibility": [
+      "Citizen of an eligible country (e.g., Nigeria, India, Indonesia, Egypt, Kenya)",
+      "Offer of admission to a participating UK university",
+      "Strong academic background",
+      "Motivation and engagement with the UK"
+    ],
+    "requiredDocs": [
+      "Application via participating university",
+      "Academic transcripts",
+      "Personal statement",
+      "References"
+    ],
+    "description": "Scholarships for students from selected countries to access UK higher education and contribute to their home countries.",
+    "url": "https://study-uk.britishcouncil.org/options/funding/scholarships/great"
+  },
+  {
+    "id": "holland",
+    "title": "Holland Scholarship",
+    "funder": "Dutch Ministry of Education, Culture and Science",
+    "country": "Netherlands",
+    "degreeLevel": "Master's",
+    "amount": "EUR 5,000 one-time grant",
+    "deadline": "2027-02-01",
+    "eligibility": [
+      "Non-EU/EEA citizen applying for a full-time Master's at a Dutch research university",
+      "Excellent academic record",
+      "Meet admission requirements of chosen institution",
+      "Not previously studied in the Netherlands"
+    ],
+    "requiredDocs": [
+      "Application via participating Dutch university",
+      "Academic transcripts",
+      "Motivation letter",
+      "CV"
+    ],
+    "description": "Scholarship for international students from outside the EU to pursue a Master's degree at a Dutch research university.",
+    "url": "https://www.studyinholland.nl/finances/scholarships/holland-scholarship"
+  },
+  {
+    "id": "belgium-master-mind",
+    "title": "Belgium Master Mind Scholarship",
+    "funder": "Flemish Ministry of Education and Training",
+    "country": "Belgium",
+    "degreeLevel": "Master's",
+    "amount": "EUR 9,600 per academic year",
+    "deadline": "2027-04-15",
+    "eligibility": [
+      "Citizen of an eligible non-EU/EEA country",
+      "Applying for a Master's programme in Flanders or Brussels",
+      "High academic performance",
+      "Not previously enrolled in a Flemish higher education institution"
+    ],
+    "requiredDocs": [
+      "Online application via participating institution",
+      "Academic transcripts",
+      "Motivation letter",
+      "Reference letter"
+    ],
+    "description": "Flemish government scholarship for outstanding international students to study a Master's programme in Flanders or Brussels.",
+    "url": "https://www.studyinflanders.be/master-mind-scholarships"
+  },
+  {
+    "id": "ares",
+    "title": "ARES Scholarships in Belgium",
+    "funder": "Academie de Recherche et d'Enseignement Superieur (ARES)",
+    "country": "Belgium",
+    "degreeLevel": "Master's / Training",
+    "amount": "Full tuition, living allowance, travel, insurance",
+    "deadline": "2026-09-19",
+    "eligibility": [
+      "Citizen of an ARES partner developing country",
+      "Relevant professional experience",
+      "Bachelor's degree for Master's track",
+      "Commitment to return home after training"
+    ],
+    "requiredDocs": [
+      "ARES online application",
+      "Academic transcripts and diplomas",
+      "CV",
+      "Motivation letter",
+      "Employer's recommendation"
+    ],
+    "description": "Belgian development cooperation scholarships for professionals from partner countries to study or train in Belgium.",
+    "url": "https://www.ares-ac.be/fr/cooperation-au-developpement/bourses"
+  },
+  {
+    "id": "austria-ith",
+    "title": "Austria ITH Scholarships for Developing Countries",
+    "funder": "Austrian Development Cooperation",
+    "country": "Austria",
+    "degreeLevel": "Master's",
+    "amount": "Tuition, accommodation, flights, health insurance, meals, pocket money",
+    "deadline": "2027-03-16",
+    "eligibility": [
+      "Citizen of a developing or ADC priority country",
+      "Age 18-35",
+      "Secondary school leaving certificate",
+      "At least one year of tourism/hospitality experience"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Secondary school certificate",
+      "Work experience proof",
+      "English proficiency test",
+      "Medical certificate"
+    ],
+    "description": "Fully funded postgraduate scholarships in tourism and hospitality at the Institute of Tourism and Hotel Management in Salzburg.",
+    "url": "https://www.ith-salzburg.com/en/studies/admission/scholarships"
+  },
+  {
+    "id": "italy-government",
+    "title": "Italian Government Scholarships",
+    "funder": "Italian Ministry of Foreign Affairs",
+    "country": "Italy",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Monthly allowance, tuition waiver, health insurance",
+    "deadline": "2027-06-30",
+    "eligibility": [
+      "Citizen of a country with diplomatic relations with Italy",
+      "Born after 31 December 1998 for Master's",
+      "Admission to an Italian public university or institution",
+      "English or Italian proficiency"
+    ],
+    "requiredDocs": [
+      "Online application on Study in Italy portal",
+      "Academic transcripts",
+      "CV",
+      "Motivation letter",
+      "Language certificate"
+    ],
+    "description": "Italian government scholarships for international students and researchers to study or conduct research in Italy.",
+    "url": "https://studyinitaly.esteri.it/"
+  },
+  {
+    "id": "czech-government",
+    "title": "Czech Government Scholarships",
+    "funder": "Czech Ministry of Education, Youth and Sports",
+    "country": "Czech Republic",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Monthly stipend, tuition waiver",
+    "deadline": "2026-09-30",
+    "eligibility": [
+      "Citizen of a developing country listed in the development cooperation programme",
+      "Meet age limits for chosen level",
+      "Good academic record",
+      "English or Czech proficiency"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Academic transcripts",
+      "Motivation letter",
+      "Two recommendation letters",
+      "Medical certificate"
+    ],
+    "description": "Czech government scholarships for nationals of developing countries to study at Czech public universities.",
+    "url": "https://www.msmt.cz/eu-and-international-affairs/development-assistance-government-scholarships"
+  },
+  {
+    "id": "swedish-institute",
+    "title": "Swedish Institute Scholarships for Global Professionals",
+    "funder": "Swedish Institute",
+    "country": "Sweden",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, living expenses, travel grant, insurance",
+    "deadline": "2027-02-10",
+    "eligibility": [
+      "Citizen of an eligible country",
+      "Minimum 3,000 hours of demonstrated work experience",
+      "Leadership experience",
+      "Admission to an eligible Swedish Master's programme"
+    ],
+    "requiredDocs": [
+      "Application via Swedish Institute portal",
+      "CV",
+      "Motivation letter",
+      "Recommendation letters",
+      "Proof of work and leadership experience"
+    ],
+    "description": "Full scholarship for global professionals to undertake full-time Master's studies in Sweden.",
+    "url": "https://si.se/en/apply/scholarships/swedish-institute-scholarships-for-global-professionals/"
+  },
+  {
+    "id": "denmark-government",
+    "title": "Danish Government Scholarships",
+    "funder": "Danish Ministry of Higher Education and Science",
+    "country": "Denmark",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full or partial tuition waiver and/or monthly stipend",
+    "deadline": "2027-03-01",
+    "eligibility": [
+      "Citizen of a non-EU/EEA country",
+      "Enrolled in a full-degree higher education programme in Denmark",
+      "Excellent academic record",
+      "English proficiency"
+    ],
+    "requiredDocs": [
+      "Application via participating Danish institution",
+      "Academic transcripts",
+      "Motivation letter",
+      "CV",
+      "English test results"
+    ],
+    "description": "Government and institutional scholarships for highly qualified non-EU/EEA students to study in Denmark.",
+    "url": "https://studyindenmark.dk/"
+  },
+  {
+    "id": "singa",
+    "title": "Singapore International Graduate Award (SINGA)",
+    "funder": "A*STAR, NUS, NTU, SUTD",
+    "country": "Singapore",
+    "degreeLevel": "PhD",
+    "amount": "Full tuition, monthly stipend SGD 2,700-3,200, airfare, settling-in allowance",
+    "deadline": "2026-12-01",
+    "eligibility": [
+      "International graduate with strong academic record",
+      "Applying for a PhD in Science or Engineering at A*STAR, NUS, NTU, or SUTD",
+      "Good skills in written and spoken English",
+      "Open to graduates from any country"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Academic transcripts",
+      "Two recommendation reports",
+      "Research proposal",
+      "Proof of English proficiency"
+    ],
+    "description": "PhD training award for international students to carry out research in Singapore's leading universities and research institutes.",
+    "url": "https://www.a-star.edu.sg/Scholarships/for-graduate-studies/singapore-international-graduate-award-singa"
+  },
+
+
+
+
+
+  {
+    "id": "taiwan-icdf",
+    "title": "Taiwan ICDF International Higher Education Scholarships",
+    "funder": "Taiwan International Cooperation and Development Fund",
+    "country": "Taiwan",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, monthly stipend, airfare, accommodation, health insurance",
+    "deadline": "2027-03-15",
+    "eligibility": [
+      "Citizen of a country on Taiwan diplomatic or development partner list",
+      "Meet academic and age requirements for chosen level",
+      "Good health and English/Chinese proficiency",
+      "Not a citizen of Taiwan"
+    ],
+    "requiredDocs": [
+      "ICDF online application",
+      "University application",
+      "Academic transcripts",
+      "Study plan or research proposal",
+      "Two recommendation letters",
+      "Medical certificate"
+    ],
+    "description": "Taiwan government scholarships for international students from partner countries to study at universities in Taiwan.",
+    "url": "https://www.icdf.org.tw/ct.asp?xItem=125053&ctNode=30327&mp=2"
+  },
+
+  {
+    "id": "new-zealand-manaaki",
+    "title": "New Zealand Manaaki Scholarships",
+    "funder": "New Zealand Ministry of Foreign Affairs and Trade",
+    "country": "New Zealand",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, living allowance, travel, health insurance, establishment allowance",
+    "deadline": "2027-03-01",
+    "eligibility": [
+      "Citizen of an eligible developing country",
+      "At least 18 years old",
+      "Strong academic record and leadership potential",
+      "Commitment to return home after study"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Academic transcripts",
+      "References",
+      "Personal statement",
+      "English proficiency proof"
+    ],
+    "description": "Scholarships for citizens of selected developing countries to gain knowledge and skills in New Zealand to contribute to sustainable development.",
+    "url": "https://www.mfat.govt.nz/en/aid-and-development/scholarships/"
+  },
+  {
+    "id": "opec-fund",
+    "title": "OPEC Fund for International Development Scholarship",
+    "funder": "OPEC Fund for International Development",
+    "country": "Austria",
+    "degreeLevel": "Master's",
+    "amount": "Up to USD 50,000 toward tuition and living expenses",
+    "deadline": "2026-08-15",
+    "eligibility": [
+      "Citizen of a developing country member of the OPEC Fund",
+      "Bachelor's degree in economics, finance, development, or related field",
+      "Strong academic record",
+      "Professional experience in development preferred"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Academic transcripts",
+      "CV",
+      "Motivation letter",
+      "Two recommendation letters"
+    ],
+    "description": "Scholarship supporting talented individuals from developing countries to pursue development-related Master's degrees.",
+    "url": "https://www.opecfund.org/"
+  },
+  {
+    "id": "isdb",
+    "title": "Islamic Development Bank Scholarships",
+    "funder": "Islamic Development Bank",
+    "country": "Saudi Arabia",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Full tuition, monthly stipend, health insurance, travel",
+    "deadline": "2027-04-30",
+    "eligibility": [
+      "Citizen of an IsDB member country",
+      "Strong academic record in science, technology, engineering, medicine, or related fields",
+      "Good health and English proficiency",
+      "Commitment to contribute to home country development"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Academic transcripts",
+      "Recommendation letters",
+      "Medical certificate",
+      "English proficiency proof"
+    ],
+    "description": "Merit-based scholarships for students from IsDB member countries to pursue undergraduate and postgraduate studies in development-related fields.",
+    "url": "https://www.isdb.org/scholarships"
+  },
+  {
+    "id": "ptdf-overseas",
+    "title": "PTDF Overseas Scholarship Scheme",
+    "funder": "Petroleum Technology Development Fund (Nigeria)",
+    "country": "UK",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Full tuition, living allowance, travel, health insurance, research grant",
+    "deadline": "2026-07-31",
+    "eligibility": [
+      "Nigerian citizen",
+      "First degree in engineering, geosciences, environmental science, or related field",
+      "Minimum second class upper division",
+      "Relevant work experience for Master's track"
+    ],
+    "requiredDocs": [
+      "PTDF online application",
+      "Academic transcripts",
+      "Degree certificate",
+      "NYSC discharge certificate",
+      "Local government identification",
+      "References"
+    ],
+    "description": "Nigerian government scholarship supporting postgraduate study in oil and gas related disciplines at top universities abroad.",
+    "url": "https://ptdf.gov.ptdf/"
+  },
+  {
+    "id": "queen-elizabeth-commonwealth",
+    "title": "Queen Elizabeth Commonwealth Scholarships",
+    "funder": "Association of Commonwealth Universities",
+    "country": "UK",
+    "degreeLevel": "Master's",
+    "amount": "Full tuition, living allowance, travel, arrival allowance, research support",
+    "deadline": "2027-01-15",
+    "eligibility": [
+      "Citizen of a Commonwealth country",
+      "Applying for a Master's in a low or middle income Commonwealth country",
+      "Strong academic record",
+      "Commitment to creating change in home community"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Academic transcripts",
+      "References",
+      "Personal statement",
+      "Proof of citizenship"
+    ],
+    "description": "Scholarships for talented students from Commonwealth countries to gain a Master's degree in another Commonwealth country.",
+    "url": "https://www.acu.ac.uk/grants-and-scholarships/queen-elizabeth-commonwealth-scholarships/"
+  },
+  {
+    "id": "humboldt-fellowship",
+    "title": "Humboldt Research Fellowship",
+    "funder": "Alexander von Humboldt Foundation",
+    "country": "Germany",
+    "degreeLevel": "PhD / Postdoc",
+    "amount": "Monthly stipend EUR 2,700-3,100, travel, family allowances, research costs",
+    "deadline": "2027-02-28",
+    "eligibility": [
+      "Doctorate or comparable academic degree completed less than four years ago",
+      "Academic publications in international journals",
+      "Research plan and German host institution confirmation",
+      "Open to all nationalities"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Research proposal",
+      "CV and list of publications",
+      "Two academic references",
+      "Host statement from German researcher"
+    ],
+    "description": "Prestigious research fellowship for postdoctoral researchers of all nationalities to conduct research in Germany.",
+    "url": "https://www.humboldt-foundation.de/en/apply/sponsorship-programmes/humboldt-research-fellowship"
+  },
+  {
+    "id": "rosa-luxemburg",
+    "title": "Rosa Luxemburg Foundation Scholarship",
+    "funder": "Rosa Luxemburg Foundation (Germany)",
+    "country": "Germany",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Monthly stipend, tuition, health insurance, travel, research allowance",
+    "deadline": "2026-10-01",
+    "eligibility": [
+      "International student committed to social justice and democratic socialism",
+      "Excellent academic record",
+      "Active social or political engagement",
+      "German language proficiency for some programmes"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Motivation letter",
+      "Research proposal (PhD)",
+      "Academic transcripts",
+      "Two references"
+    ],
+    "description": "Scholarship for international students pursuing postgraduate study in Germany who are engaged in social and political justice work.",
+    "url": "https://www.rosalux.de/en/foundation/scholarships"
+  },
+  {
+    "id": "friedrich-ebert",
+    "title": "Friedrich Ebert Foundation Scholarship",
+    "funder": "Friedrich Ebert Stiftung (Germany)",
+    "country": "Germany",
+    "degreeLevel": "Bachelor's / Master's / PhD",
+    "amount": "Monthly stipend EUR 830-1,200, health insurance, tuition, books",
+    "deadline": "2026-11-30",
+    "eligibility": [
+      "International student with above-average academic results",
+      "Social and political engagement aligned with social democracy",
+      "Good German language skills",
+      "Admission to German university or applied sciences institution"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Motivation letter",
+      "Academic transcripts",
+      "Two references",
+      "Proof of German proficiency"
+    ],
+    "description": "German political foundation scholarship supporting talented international students committed to social democracy and social justice.",
+    "url": "https://www.fes.de/en/studienfoerderung"
+  },
+  {
+    "id": "konrad-adenauer",
+    "title": "Konrad Adenauer Foundation Scholarship",
+    "funder": "Konrad Adenauer Stiftung (Germany)",
+    "country": "Germany",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Monthly stipend, tuition, health insurance, books, research allowance",
+    "deadline": "2026-07-15",
+    "eligibility": [
+      "International student with excellent academic record",
+      "Commitment to democracy, rule of law, and social market economy",
+      "University admission or application in progress",
+      "Good German or English proficiency"
+    ],
+    "requiredDocs": [
+      "Online application",
+      "Motivation letter",
+      "CV",
+      "Academic transcripts",
+      "Two references"
+    ],
+    "description": "German political foundation scholarship for international Master's and PhD students committed to democratic values and leadership.",
+    "url": "https://www.kas.de/en/web/begabtenfoerderung-und-kultur/studienfoerderung"
+  },
+  {
+    "id": "hanns-seidel",
+    "title": "Hanns Seidel Foundation Scholarship",
+    "funder": "Hanns Seidel Stiftung (Germany)",
+    "country": "Germany",
+    "degreeLevel": "Master's / PhD",
+    "amount": "Monthly stipend, tuition, health insurance, travel, books",
+    "deadline": "2026-06-30",
+    "eligibility": [
+      "International student with strong academic record",
+      "Commitment to Christian-social values and civic engagement",
+      "Admission to German university or research institution",
+      "German language proficiency"
+    ],
+    "requiredDocs": [
+      "Application form",
+      "Motivation letter",
+      "Academic transcripts",
+      "Two references",
+      "Language proficiency proof"
+    ],
+    "description": "German political foundation scholarship supporting international postgraduate students aligned with Christian-social values and active citizenship.",
+    "url": "https://www.hss.de/en/foundation/scholarships"
+  }
+]
