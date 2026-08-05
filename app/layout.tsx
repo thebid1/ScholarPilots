@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import RegisterSW from "@/app/components/RegisterSW";
+import { AuthProvider } from "@/app/providers/AuthProvider";
 
 export const metadata: Metadata = {
   title: "ScholarPilot AI",
@@ -35,7 +36,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased page-bg min-h-[100dvh]">
         <RegisterSW />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

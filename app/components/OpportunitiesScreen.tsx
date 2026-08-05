@@ -1,30 +1,34 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { UserProfile } from '@/app/types';
-import { enrichScholarships } from '@/app/lib/mockData';
-import { useScholarships } from '@/app/lib/scholarships';
+import { Application, Scholarship } from '@/app/types';
+
 import OpportunityCard from './OpportunityCard';
 import ScreenHeader from './ScreenHeader';
 import ChatFAB from './ChatFAB';
+import AddOpportunityModal from './AddOpportunityModal';
 import {
   Search,
   SlidersHorizontal,
   Loader2,
-  Database,
   AlertCircle,
-  RefreshCw,
   Check,
   CalendarArrowDown,
   CalendarArrowUp,
+  Plus,
   Star,
-  Target,
 } from 'lucide-react';
 
 interface OpportunitiesScreenProps {
-  profile: UserProfile;
-  applications: { scholarshipId: string }[];
-  onTrack: (scholarshipId: string) => void;
+  applications: Application[];
+  scholarships: Scholarship[];
+  loading: boolean;
+  error: string | null;
+  onTrack: (scholarship: Scholarship, source?: 'catalog' | 'user') => void;
+  /** Ids of entries the user added themselves, for the badge and delete action. */
+  userAddedIds: Set<string>;
+  onAddOpportunity: (opportunity: Omit<Scholarship, 'id'>) => Promise<void>;
+  onRemoveOpportunity: (id: string) => void;
 }
 
 const FILTERS = [
@@ -42,7 +46,7 @@ const FILTERS = [
   'Sweden',
 ];
 
-type SortOption = 'relevance' | 'deadline-asc' | 'deadline-desc' | 'tracking';
+type SortOption = 'deadline-asc' | 'deadline-desc' | 'tracking';
 
 interface SortChoice {
   value: SortOption;
@@ -51,20 +55,36 @@ interface SortChoice {
 }
 
 const SORT_CHOICES: SortChoice[] = [
-  { value: 'relevance', label: 'Best match', icon: Target },
   { value: 'deadline-asc', label: 'Due soonest', icon: CalendarArrowDown },
   { value: 'deadline-desc', label: 'Due latest', icon: CalendarArrowUp },
   { value: 'tracking', label: 'Tracking first', icon: Star },
 ];
 
-export default function OpportunitiesScreen({ profile, applications, onTrack }: OpportunitiesScreenProps) {
-  const { scholarships, loading, error, source, rootHash, retry } = useScholarships();
-  const enriched = useMemo(() => enrichScholarships(profile, scholarships), [profile, scholarships]);
-  const trackedIds = useMemo(() => new Set(applications.map((a) => a.scholarshipId)), [applications]);
+export default function OpportunitiesScreen({
+  applications,
+  scholarships,
+  loading,
+  error,
+  onTrack,
+  userAddedIds,
+  onAddOpportunity,
+  onRemoveOpportunity,
+}: OpportunitiesScreenProps) {
+  const trackedIds = useMemo(
+    () => new Set(applications.map((a) => a.scholarshipId).filter(Boolean) as string[]),
+    [applications]
+  );
+  // User-added applications carry no scholarshipId, so their tracked state is
+  // matched on the snapshot title instead.
+  const trackedTitles = useMemo(
+    () => new Set(applications.filter((a) => a.source === 'user').map((a) => a.snapshot.title)),
+    [applications]
+  );
 
+  const [addOpen, setAddOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
-  const [sortBy, setSortBy] = useState<SortOption>('relevance');
+  const [sortBy, setSortBy] = useState<SortOption>('deadline-asc');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortButtonRef = useRef<HTMLButtonElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -85,8 +105,13 @@ export default function OpportunitiesScreen({ profile, applications, onTrack }: 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [sortMenuOpen]);
 
+  const isTracked = useMemo(
+    () => (s: Scholarship) => trackedIds.has(s.id) || trackedTitles.has(s.title),
+    [trackedIds, trackedTitles]
+  );
+
   const filtered = useMemo(() => {
-    const result = enriched.filter((s) => {
+    const result = scholarships.filter((s) => {
       const matchesFilter = filter === 'All' || s.country === filter;
       const q = query.trim().toLowerCase();
       const matchesQuery =
@@ -99,23 +124,21 @@ export default function OpportunitiesScreen({ profile, applications, onTrack }: 
 
     result.sort((a, b) => {
       switch (sortBy) {
-        case 'deadline-asc':
-          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
         case 'deadline-desc':
           return new Date(b.deadline).getTime() - new Date(a.deadline).getTime();
         case 'tracking': {
-          const aTracked = trackedIds.has(a.id) ? 1 : 0;
-          const bTracked = trackedIds.has(b.id) ? 1 : 0;
+          const aTracked = isTracked(a) ? 1 : 0;
+          const bTracked = isTracked(b) ? 1 : 0;
           if (aTracked !== bTracked) return bTracked - aTracked;
-          return (b.relevanceScore ?? 0) - (a.relevanceScore ?? 0);
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
         }
         default:
-          return (b.relevanceScore ?? 0) - (a.relevanceScore ?? 0);
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
       }
     });
 
     return result;
-  }, [enriched, filter, query, sortBy, trackedIds]);
+  }, [scholarships, filter, query, sortBy, isTracked]);
 
   const activeSortLabel = SORT_CHOICES.find((c) => c.value === sortBy)?.label ?? 'Sort';
 
@@ -124,6 +147,15 @@ export default function OpportunitiesScreen({ profile, applications, onTrack }: 
       <ScreenHeader
         title="Discover"
         subtitle={`${filtered.length} scholarship${filtered.length === 1 ? '' : 's'} · ${activeSortLabel}`}
+        action={
+          <button
+            onClick={() => setAddOpen(true)}
+            className="btn-primary text-xs px-3 py-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add
+          </button>
+        }
       />
 
       <div className="flex items-center gap-2">
@@ -206,42 +238,44 @@ export default function OpportunitiesScreen({ profile, applications, onTrack }: 
             <AlertCircle className="w-4 h-4 text-[var(--red)]" />
             <span>{error}</span>
           </div>
-          <button onClick={retry} className="p-1.5 rounded-lg surface-muted hover:opacity-80">
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
         </div>
-      )}
-
-      {source === '0g' && rootHash && (
-        <a
-          href={`${process.env.NEXT_PUBLIC_OG_STORAGE_INDEXER}/file?root=${encodeURIComponent(rootHash)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="card p-3 flex items-center gap-2 text-xs text-secondary hover:bg-[var(--surface-muted)] transition-colors"
-        >
-          <Database className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          <span>Catalog loaded from 0G Storage</span>
-          <span className="ml-auto font-mono text-tertiary truncate max-w-[120px]">{rootHash.slice(0, 12)}…</span>
-        </a>
       )}
 
       {loading && (
         <div className="flex items-center justify-center gap-2 py-8 text-sm text-secondary">
           <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
-          Loading scholarships from 0G…
+          AI is filtering scholarships for your discipline…
         </div>
       )}
 
       <div className="flex flex-col gap-3">
-        {filtered.map((s) => (
-          <OpportunityCard
-            key={s.id}
-            scholarship={s}
-            isTracked={trackedIds.has(s.id)}
-            onTrack={() => onTrack(s.id)}
-          />
-        ))}
+        {filtered.map((s) => {
+          const userAdded = userAddedIds.has(s.id);
+          return (
+            <OpportunityCard
+              key={s.id}
+              scholarship={s}
+              isTracked={isTracked(s)}
+              onTrack={() => onTrack(s, userAdded ? 'user' : 'catalog')}
+              isUserAdded={userAdded}
+              onRemove={userAdded ? () => onRemoveOpportunity(s.id) : undefined}
+            />
+          );
+        })}
       </div>
+
+      {!loading && filtered.length === 0 && (
+        <div className="card p-6 text-center text-sm text-secondary">
+          Nothing matches that search. Try a different filter, or add an opportunity you found
+          elsewhere.
+        </div>
+      )}
+
+      <AddOpportunityModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSave={onAddOpportunity}
+      />
 
       <ChatFAB />
     </div>

@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfile, Application, Scholarship } from '@/app/types';
-import { getProfile, getApplications, saveProfile } from '@/app/lib/storage';
-import { useScholarships } from '@/app/lib/scholarships';
+import { daysUntil } from '@/app/lib/mockData';
 import {
   Search,
   ClipboardList,
@@ -17,49 +14,36 @@ import {
 } from 'lucide-react';
 import ChatFAB from './ChatFAB';
 import InstallPrompt from './InstallPrompt';
-
-function findScholarship(id: string, list: Scholarship[]) {
-  return list.find((s) => s.id === id);
-}
-
-function daysUntil(date: string) {
-  return Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-}
+import { useAuth } from '@/app/providers/AuthProvider';
+import { useProfile } from '@/app/hooks/useProfile';
+import { useApplications } from '@/app/hooks/useApplications';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const { scholarships } = useScholarships();
+  const { signOut } = useAuth();
+  const { profile } = useProfile();
+  const { applications } = useApplications();
 
-  useEffect(() => {
-    setProfile(getProfile());
-    setApplications(getApplications());
-  }, []);
-
-  const upcoming = applications
+  // Deadlines come from each application's own snapshot, so a user-added
+  // opportunity counts here exactly like a catalog one.
+  const open = applications
+    .filter((a) => a.status !== 'Submitted' && daysUntil(a.snapshot.deadline) >= 0)
     .slice()
     .sort(
       (a, b) =>
-        new Date(findScholarship(a.scholarshipId, scholarships)?.deadline ?? '9999-12-31').getTime() -
-        new Date(findScholarship(b.scholarshipId, scholarships)?.deadline ?? '9999-12-31').getTime()
-    )[0];
+        new Date(a.snapshot.deadline || '9999-12-31').getTime() -
+        new Date(b.snapshot.deadline || '9999-12-31').getTime()
+    );
 
-  const upcomingScholarship = upcoming ? findScholarship(upcoming.scholarshipId, scholarships) : null;
+  const nextUp = open[0] ?? null;
 
   const trackedCount = applications.length;
   const submittedCount = applications.filter((a) => a.status === 'Submitted').length;
-  const dueSoonCount = applications.filter((a) => {
-    const s = findScholarship(a.scholarshipId, scholarships);
-    if (!s) return false;
-    const days = daysUntil(s.deadline);
-    return days >= 0 && days <= 14 && a.status !== 'Submitted';
-  }).length;
+  const dueSoonCount = open.filter((a) => daysUntil(a.snapshot.deadline) <= 14).length;
 
-  function handleSignOut() {
-    if (typeof window !== 'undefined' && confirm('Sign out and reset profile?')) {
-      saveProfile(null as unknown as UserProfile);
-      window.location.reload();
+  async function handleSignOut() {
+    if (typeof window !== 'undefined' && confirm('Sign out of ScholarPilot?')) {
+      await signOut();
     }
   }
 
@@ -97,26 +81,26 @@ export default function HomeScreen() {
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
           <div className="relative">
             <p className="text-xs font-bold uppercase tracking-wide text-white/80 mb-1">
-              {upcomingScholarship ? 'Next deadline' : 'Ready to start?'}
+              {nextUp ? 'Next deadline' : 'Ready to start?'}
             </p>
             <h2 className="text-2xl font-extrabold mb-2">
-              {upcomingScholarship ? upcomingScholarship.title : 'Discover scholarships'}
+              {nextUp ? nextUp.snapshot.title : 'Discover scholarships'}
             </h2>
             <p className="text-sm text-white/90 mb-4">
-              {upcomingScholarship
-                ? `Due ${new Date(upcomingScholarship.deadline).toLocaleDateString(undefined, {
+              {nextUp
+                ? `Due ${new Date(nextUp.snapshot.deadline).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
                   })}`
-                : 'Let ScholarPilot match you with funded opportunities.'}
+                : 'Browse what is open right now and track what interests you.'}
             </p>
             <button
-              onClick={() => router.push(upcomingScholarship ? '/applications' : '/opportunities')}
+              onClick={() => router.push(nextUp ? '/applications' : '/opportunities')}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white font-bold text-sm shadow-md transition-transform active:scale-95"
               style={{ color: 'var(--primary)' }}
             >
-              {upcomingScholarship ? 'View pipeline' : 'Find matches'}
+              {nextUp ? 'View pipeline' : 'Browse opportunities'}
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -161,7 +145,7 @@ export default function HomeScreen() {
                 <Search className="w-5 h-5" />
               </div>
               <p className="font-extrabold text-primary text-sm">Find scholarships</p>
-              <p className="text-xs text-tertiary mt-0.5">Matches based on profile</p>
+              <p className="text-xs text-tertiary mt-0.5">See what&apos;s open now</p>
             </button>
             <button
               onClick={() => router.push('/applications')}

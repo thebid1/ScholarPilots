@@ -17,14 +17,30 @@
 /build
 /dist
 
+# working notes — local only, not part of the shipped repo
+PIPELINE_NOTES.md
+
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+
+# editor / tooling scratch
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+*.rej
+.idea/
+.vscode/
+.claude/settings.local.json
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+/logs
 
 # local env files
 .env*.local

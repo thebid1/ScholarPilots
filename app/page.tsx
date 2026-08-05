@@ -1,53 +1,38 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UserProfile, UserSession } from '@/app/types';
-import { getProfile, saveProfile, getSession, saveSession } from '@/app/lib/storage';
 import OnboardingScreen from '@/app/components/OnboardingScreen';
 import SignInScreen from '@/app/components/SignInScreen';
 import ProfileForm from '@/app/components/ProfileForm';
 import Sidebar from '@/app/components/Sidebar';
 import HomeScreen from '@/app/components/HomeScreen';
 import SplashScreen from '@/app/components/SplashScreen';
+import { useAuth } from '@/app/providers/AuthProvider';
+import { useProfile } from '@/app/hooks/useProfile';
 
 export default function HomePage() {
-  const [session, setSession] = useState<UserSession | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading, save } = useProfile();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    const s = getSession();
-    const p = getProfile();
-    setSession(s);
-    setProfile(p);
-    setLoaded(true);
-    if (!s) setShowOnboarding(true);
-  }, []);
+    // Onboarding is for first-time visitors only; a signed-in user skips it.
+    if (!authLoading && !user) setShowOnboarding(true);
+  }, [authLoading, user]);
 
-  function handleSignIn(s: UserSession) {
-    saveSession(s);
-    setSession(s);
-  }
-
-  function handleProfileComplete(p: UserProfile) {
-    saveProfile(p);
-    setProfile(p);
-  }
-
-  if (!loaded) {
+  if (authLoading || (user && profileLoading)) {
     return <SplashScreen />;
   }
 
-  if (!session) {
+  if (!user) {
     if (showOnboarding) {
       return <OnboardingScreen onStart={() => setShowOnboarding(false)} />;
     }
-    return <SignInScreen onSignIn={handleSignIn} />;
+    return <SignInScreen />;
   }
 
   if (!profile) {
-    return <ProfileForm onComplete={handleProfileComplete} />;
+    return <ProfileForm onComplete={save} />;
   }
 
   return (

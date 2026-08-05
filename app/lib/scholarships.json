@@ -844,11 +844,6 @@
     "description": "PhD training award for international students to carry out research in Singapore's leading universities and research institutes.",
     "url": "https://www.a-star.edu.sg/Scholarships/for-graduate-studies/singapore-international-graduate-award-singa"
   },
-
-
-
-
-
   {
     "id": "taiwan-icdf",
     "title": "Taiwan ICDF International Higher Education Scholarships",
@@ -874,7 +869,6 @@
     "description": "Taiwan government scholarships for international students from partner countries to study at universities in Taiwan.",
     "url": "https://www.icdf.org.tw/ct.asp?xItem=125053&ctNode=30327&mp=2"
   },
-
   {
     "id": "new-zealand-manaaki",
     "title": "New Zealand Manaaki Scholarships",
@@ -954,7 +948,7 @@
     "country": "UK",
     "degreeLevel": "Master's / PhD",
     "amount": "Full tuition, living allowance, travel, health insurance, research grant",
-    "deadline": "2026-07-31",
+    "deadline": "2027-07-31",
     "eligibility": [
       "Nigerian citizen",
       "First degree in engineering, geosciences, environmental science, or related field",
@@ -1075,7 +1069,7 @@
     "country": "Germany",
     "degreeLevel": "Master's / PhD",
     "amount": "Monthly stipend, tuition, health insurance, books, research allowance",
-    "deadline": "2026-07-15",
+    "deadline": "2027-07-15",
     "eligibility": [
       "International student with excellent academic record",
       "Commitment to democracy, rule of law, and social market economy",
@@ -1099,7 +1093,7 @@
     "country": "Germany",
     "degreeLevel": "Master's / PhD",
     "amount": "Monthly stipend, tuition, health insurance, travel, books",
-    "deadline": "2026-06-30",
+    "deadline": "2027-06-30",
     "eligibility": [
       "International student with strong academic record",
       "Commitment to Christian-social values and civic engagement",

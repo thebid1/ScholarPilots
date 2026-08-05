@@ -1,0 +1,85 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# The app runs as a Node web service (not a static site): the API routes under
+# app/api/* need a server at runtime. Postgres holds the public scholarship
+# catalog; Firebase holds all user-owned data.
+#
+# Secrets are declared with `sync: false` so Render prompts for them in the
+# dashboard instead of storing them in git.
+
+services:
+  - type: web
+    name: scholarpilot
+    runtime: node
+    plan: free
+    region: frankfurt # match the existing Postgres instance
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+
+      # Render Postgres — read-only scholarship catalog at runtime.
+      - key: DATABASE_URL
+        sync: false
+
+      # Every AI call in the app: discipline filter, chat, "Search by name"
+      # extraction, and the pasted-listing parser.
+      - key: FEATHERLESS_API_KEY
+        sync: false
+
+      # Web search for "Search by name" in the Add Opportunity modal.
+      - key: BRAVE_SEARCH_API_KEY
+        sync: false
+
+      # Firebase browser SDK — these are public by design.
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+        sync: false
+
+      # Firebase Admin — service account JSON, server-only. Never NEXT_PUBLIC_.
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+
+      # Shared secret guarding /api/cron/check-deadlines.
+      - key: CRON_SECRET
+        generateValue: true
+
+  # Daily deadline sweep. Sends the 7-day and 1-day reminders, then records the
+  # send on each application so tomorrow's run doesn't repeat it.
+  #
+  # 06:12 UTC — early enough to land before most study days, and deliberately off
+  # the hour so it isn't queued behind every other blueprint scheduled at :00.
+  - type: cron
+    name: scholarpilot-deadlines
+    runtime: node
+    plan: free
+    region: frankfurt
+    schedule: "12 6 * * *"
+    buildCommand: "true" # nothing to build; the job is a single curl
+    startCommand: >-
+      curl -fsS --max-time 120
+      -H "Authorization: Bearer $CRON_SECRET"
+      "$APP_URL/api/cron/check-deadlines"
+    envVars:
+      # Public base URL of the web service, e.g. https://scholarpilot.onrender.com
+      - key: APP_URL
+        sync: false
+      # Must match the web service's generated CRON_SECRET — copy it across in
+      # the dashboard after the first deploy.
+      - key: CRON_SECRET
+        sync: false

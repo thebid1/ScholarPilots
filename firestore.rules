@@ -1,0 +1,24 @@
+rules_version = '2';
+
+// ScholarPilot — every document is owned by exactly one user.
+//
+// There is no shared or public collection here: the scholarship catalog lives
+// in Postgres and is served through /api/scholarships, so Firestore only ever
+// holds user-private data. The cron job reads via firebase-admin, which bypasses
+// these rules by design.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // users/{uid} and everything beneath it — profile, fcmTokens,
+    // applications/*, opportunities/*.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Anything outside a user's own tree is denied, including collectionGroup
+    // queries from the client.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

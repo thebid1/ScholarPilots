@@ -1,57 +1,83 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { UserProfile, Application, UserSession } from '@/app/types';
-import { getProfile, saveProfile, getApplications, saveApplications, getSession, saveSession } from '@/app/lib/storage';
-import { createApplication } from '@/app/lib/mockData';
-import { useScholarships } from '@/app/lib/scholarships';
+import { useEffect, useMemo, useState } from 'react';
+import { Scholarship } from '@/app/types';
 import SignInScreen from '@/app/components/SignInScreen';
 import ProfileForm from '@/app/components/ProfileForm';
 import Sidebar from '@/app/components/Sidebar';
 import OpportunitiesScreen from '@/app/components/OpportunitiesScreen';
 import SplashScreen from '@/app/components/SplashScreen';
+import { useAuth } from '@/app/providers/AuthProvider';
+import { useProfile } from '@/app/hooks/useProfile';
+import { useApplications } from '@/app/hooks/useApplications';
+import { useUserOpportunities } from '@/app/hooks/useUserOpportunities';
 
 export default function OpportunitiesPage() {
-  const [session, setSession] = useState<UserSession | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const { scholarships } = useScholarships();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading, save } = useProfile();
+  const { applications, track } = useApplications();
+  const {
+    opportunities: userOpportunities,
+    loading: userOpportunitiesLoading,
+    error: userOpportunitiesError,
+    add: addOpportunity,
+    remove: removeOpportunity,
+  } = useUserOpportunities();
+
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSession(getSession());
-    setProfile(getProfile());
-    setApplications(getApplications());
-    setLoaded(true);
-  }, []);
+    if (!profile) return;
 
-  function handleSignIn(s: UserSession) {
-    saveSession(s);
-    setSession(s);
-  }
+    let cancelled = false;
+    async function fetchScholarships() {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/opportunities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch scholarships');
+        if (!cancelled) setScholarships(data.scholarships || []);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load scholarships');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
 
-  function handleProfileComplete(p: UserProfile) {
-    saveProfile(p);
-    setProfile(p);
-  }
+    fetchScholarships();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile]);
 
-  function handleTrack(scholarshipId: string) {
-    if (applications.some((a) => a.scholarshipId === scholarshipId)) return;
-    const updated = [...applications, createApplication(scholarshipId, scholarships)];
-    setApplications(updated);
-    saveApplications(updated);
-  }
+  // The user's own entries sit above the catalog — they added them on purpose,
+  // so they should not have to scroll past 40 curated rows to find them.
+  const merged = useMemo(
+    () => [...userOpportunities, ...scholarships],
+    [userOpportunities, scholarships]
+  );
+  const userAddedIds = useMemo(
+    () => new Set(userOpportunities.map((o) => o.id)),
+    [userOpportunities]
+  );
 
-  if (!loaded) {
+  if (authLoading || (user && profileLoading)) {
     return <SplashScreen />;
   }
 
-  if (!session) {
-    return <SignInScreen onSignIn={handleSignIn} />;
+  if (!user) {
+    return <SignInScreen />;
   }
 
   if (!profile) {
-    return <ProfileForm onComplete={handleProfileComplete} />;
+    return <ProfileForm onComplete={save} />;
   }
 
   return (
@@ -59,7 +85,16 @@ export default function OpportunitiesPage() {
       <Sidebar />
       <main className="flex-1 min-w-0 px-4 py-4 md:px-8 md:py-8">
         <div className="max-w-3xl mx-auto">
-          <OpportunitiesScreen profile={profile} applications={applications} onTrack={handleTrack} />
+          <OpportunitiesScreen
+            applications={applications}
+            scholarships={merged}
+            loading={loading || userOpportunitiesLoading}
+            error={error || userOpportunitiesError}
+            onTrack={track}
+            userAddedIds={userAddedIds}
+            onAddOpportunity={addOpportunity}
+            onRemoveOpportunity={removeOpportunity}
+          />
         </div>
       </main>
     </div>

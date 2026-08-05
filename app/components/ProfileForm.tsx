@@ -4,22 +4,32 @@ import { useState } from 'react';
 import { UserProfile } from '@/app/types';
 import { DISCIPLINES, COUNTRIES } from '@/app/lib/mockData';
 import { ChevronRight, ChevronLeft, Check, User, BookOpen, Target } from 'lucide-react';
+import { useAuth } from '@/app/providers/AuthProvider';
 import AppLogo from './AppLogo';
 
 interface ProfileFormProps {
   onComplete: (profile: UserProfile) => void;
+  /** Prefills the wizard when editing an existing profile. */
+  initial?: UserProfile | null;
+  /** Copy for the submit button; "Save profile" reads oddly when editing. */
+  submitLabel?: string;
 }
 
 const TOTAL_STEPS = 3;
 
-export default function ProfileForm({ onComplete }: ProfileFormProps) {
+export default function ProfileForm({ onComplete, initial, submitLabel }: ProfileFormProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
-  const [name, setName] = useState('');
-  const [discipline, setDiscipline] = useState('');
-  const [cgpa, setCgpa] = useState('');
-  const [targetDegree, setTargetDegree] = useState<'BSc' | 'MSc' | 'PhD'>('MSc');
-  const [countryPreference, setCountryPreference] = useState<string[]>([]);
-  const [careerGoal, setCareerGoal] = useState('');
+  const [name, setName] = useState(initial?.name ?? user?.displayName ?? '');
+  const [discipline, setDiscipline] = useState(initial?.discipline ?? '');
+  const [cgpa, setCgpa] = useState(initial ? String(initial.cgpa) : '');
+  const [targetDegree, setTargetDegree] = useState<'BSc' | 'MSc' | 'PhD'>(
+    initial?.targetDegree ?? 'MSc'
+  );
+  const [countryPreference, setCountryPreference] = useState<string[]>(
+    initial?.countryPreference ?? []
+  );
+  const [careerGoal, setCareerGoal] = useState(initial?.careerGoal ?? '');
   const [error, setError] = useState<string | null>(null);
 
   function toggleCountry(country: string) {
@@ -61,7 +71,7 @@ export default function ProfileForm({ onComplete }: ProfileFormProps) {
     e.preventDefault();
     if (!validateCurrentStep()) return;
     const profile: UserProfile = {
-      id: `user-${Date.now()}`,
+      id: user?.uid ?? initial?.id ?? `user-${Date.now()}`,
       name: name.trim(),
       discipline,
       cgpa: parseFloat(cgpa),
@@ -125,7 +135,7 @@ export default function ProfileForm({ onComplete }: ProfileFormProps) {
           Build your scholarship profile
         </h1>
         <p className="text-sm text-secondary mb-5">
-          A few details help ScholarPilot match you with the best funding opportunities.
+          A few details help ScholarPilot tailor your documents and keep your deadlines straight.
         </p>
 
         {error && (
@@ -269,7 +279,7 @@ export default function ProfileForm({ onComplete }: ProfileFormProps) {
             ) : (
               <button type="submit" className="btn-primary">
                 <Check className="w-4 h-4" />
-                Save profile
+                {submitLabel ?? 'Save profile'}
               </button>
             )}
           </div>
@@ -277,7 +287,7 @@ export default function ProfileForm({ onComplete }: ProfileFormProps) {
       </div>
 
       <p className="relative mt-5 text-xs text-tertiary">
-        Your information is stored locally on your device.
+        Saved to your account, so it follows you across devices.
       </p>
     </div>
   );

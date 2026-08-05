@@ -3,56 +3,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ChatMessage } from '@/app/types';
-import { getChat } from '@/app/lib/storage';
 import {
   Home,
   Search,
   ClipboardList,
   MessageSquare,
-  MessageCircle,
   Sparkles,
+  UserCircle2,
 } from 'lucide-react';
 import AppLogo from './AppLogo';
 
 const links = [
   { href: '/', label: 'Home', icon: Home },
+  { href: '/profile', label: 'Profile', icon: UserCircle2 },
   { href: '/opportunities', label: 'Discover', icon: Search },
   { href: '/applications', label: 'Pipeline', icon: ClipboardList },
   { href: '/chat', label: 'Chat', icon: MessageSquare },
 ];
 
-function useChatHistory() {
-  const [history, setHistory] = useState<ChatMessage[]>([]);
-  useEffect(() => {
-    setHistory(getChat());
-  }, []);
-  return history;
-}
-
-function ChatHistoryList({ history }: { history: ChatMessage[] }) {
-  if (history.length === 0) {
-    return <p className="text-xs text-tertiary px-3 py-2">No messages yet.</p>;
-  }
-  return (
-    <div className="space-y-1">
-      {history.slice(-8).map((msg, idx) => {
-        const isUser = msg.role === 'user';
-        return (
-          <div key={idx} className="px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] cursor-default transition-colors">
-            <p className="text-[10px] font-bold text-tertiary mb-0.5">{isUser ? 'You' : 'ScholarPilot'}</p>
-            <p className="text-xs text-secondary line-clamp-2">{msg.content}</p>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export default function Sidebar() {
   const pathname = usePathname();
-  const history = useChatHistory();
-  const isChat = pathname === '/chat';
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -109,22 +79,12 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {isChat && (
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="flex items-center gap-2 px-3 mb-2 text-xs font-bold uppercase tracking-wide text-tertiary">
-              <MessageCircle className="w-3.5 h-3.5" />
-              Chat history
-            </div>
-            <ChatHistoryList history={history} />
-          </div>
-        )}
-
         <div className="mt-auto px-4 py-4 rounded-2xl text-xs text-secondary" style={{ backgroundColor: 'var(--primary-fade)' }}>
           <div className="flex items-center gap-2 mb-2 font-bold" style={{ color: 'var(--primary)' }}>
             <Sparkles className="w-3.5 h-3.5" />
-            Demo prototype
+            Synced
           </div>
-          Your data is stored locally on this device.
+          Your profile, applications and chats are synced across devices.
         </div>
       </aside>
     </>

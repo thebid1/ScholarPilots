@@ -1,7 +1,7 @@
-# ScholarPilot AI × 0G Zero Cup
+# ScholarPilot AI
 
 <p align="center">
-  <strong>AI-native scholarship copilot powered by 0G decentralized infrastructure.</strong>
+  <strong>AI-native scholarship copilot for discovering and tracking opportunities.</strong>
 </p>
 
 <p align="center">
@@ -18,11 +18,11 @@
 
 **ScholarPilot AI** helps students discover, evaluate, and apply for scholarships worldwide. It matches opportunities to a student's profile, tracks application deadlines with milestone timelines, drafts Statements of Purpose, reviews CVs, and answers scholarship questions through an AI chat interface.
 
-This project is built for the **[0G Zero Cup](https://0g.ai/arena/zero-cup)** hackathon. Our mission is to move every layer of the copilot — data, inference, and user identity — onto 0G's decentralized stack.
+This project is designed as a polished scholarship assistant that helps users discover, organize, and track funding opportunities.
 
-### Why 0G?
+### Why ScholarPilot?
 
-Scholarship data is often scattered across websites, PDFs, and closed databases. By storing the catalog on **0G Storage**, we make the dataset:
+Scholarship data is often scattered across websites, PDFs, and closed databases. ScholarPilot brings the catalog together into a simple experience that helps users:
 
 - **Open and verifiable** — anyone can fetch the catalog by its root hash.
 - **Censorship-resistant** — no single server can take the dataset down.
@@ -217,9 +217,8 @@ Edit `.env.local` and fill in the values:
 # Optional: AI fallback for Phase 1
 NEXT_PUBLIC_GEMINI_API_KEY=your-gemini-api-key
 
-# 0G Storage testnet
-NEXT_PUBLIC_OG_STORAGE_INDEXER=https://indexer-storage-testnet-turbo.0g.ai
-NEXT_PUBLIC_SCHOLARSHIP_ROOT_HASH=0x-your-uploaded-root-hash
+# Gemini configuration
+NEXT_PUBLIC_GEMINI_API_KEY=your-api-key
 
 # Deployer wallet (used only by the upload script)
 OG_TESTNET_PRIVATE_KEY=0x-your-private-key
@@ -235,9 +234,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-If you already have a root hash configured, the Discover page will load the catalog from 0G Storage.
+The Discover page will load the bundled scholarship catalog immediately.
 
-### 4. Upload the scholarship catalog to 0G Storage
+### 4. Optional: refresh the local catalog
 
 If you want to upload your own copy of the catalog:
 
@@ -310,18 +309,18 @@ Do **not** set `OG_TESTNET_PRIVATE_KEY` in the hosting environment. It is only n
 A good 3-minute demo video covers:
 
 1. **Onboarding** — landing on the app, signing in, and completing the profile.
-2. **Discover** — browsing scholarships loaded from 0G Storage and clicking the root-hash link.
+2. **Discover** — browsing scholarships from the bundled catalog.
 3. **Track** — adding a scholarship to the pipeline and viewing milestones.
 4. **Chat** — asking ScholarPilot for matches or a tailored SOP.
-5. **Verification** — opening the 0G Storage explorer to prove the catalog is on-chain.
+5. **Verification** — confirming entries appear in the Discover experience.
 
 ---
 
 ## 🔮 Future Work
 
-### Phase 2 — 0G Compute Backend
+### Phase 2 — AI backend
 
-- Replace Google Gemini with **0G Compute Router** for all AI inference.
+- Expand the Gemini-powered assistant for richer scholarship matching and application support.
 - Scholarship matching, SOP drafting, CV review, and deadline summaries will run through decentralized compute nodes.
 - Reduce dependency on centralized AI APIs.
 
@@ -344,11 +343,11 @@ A good 3-minute demo video covers:
 
 ## 🙏 Acknowledgments
 
-Built for the **0G Zero Cup** hackathon.
+Built as a practical scholarship copilot experience.
 
-- [0G Storage](https://0g.ai/) for decentralized data availability.
-- [0G Compute](https://0g.ai/) for the upcoming decentralized inference layer.
-- [Agentic ID](https://github.com/0glabs/Agentic-ID) for the on-chain identity standard.
+- Local-first scholarship discovery.
+- AI-assisted guidance for applications.
+- Personalized opportunity tracking.
 
 ---
 
