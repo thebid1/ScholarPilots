@@ -19,8 +19,11 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: NODE_ENV
-        value: production
+      # NODE_ENV is deliberately not set here. Render applies service env vars at
+      # build time too, and `npm ci` under NODE_ENV=production skips
+      # devDependencies — which is where typescript, tailwindcss and the @types
+      # packages live, so `next build` would fail. Render already sets
+      # NODE_ENV=production at runtime on its own.
 
       # Render Postgres — read-only scholarship catalog at runtime.
       - key: DATABASE_URL
