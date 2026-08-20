@@ -27,10 +27,11 @@ ScholarPilot pulls a curated catalog into one place, lets a student track what t
 ## ✨ Features
 
 ### Discover
-- Browse a catalog of **46 verified international scholarships** across **23 countries**.
+- Browse a catalog of **verified international scholarships** across **multiple countries**.
 - Search by title, funder, or country; filter by country.
 - Sort by **due soonest**, **due latest**, or **tracking first**.
 - Only future-dated opportunities are served — closed cycles are filtered out in SQL.
+- The catalog is refreshed daily from configured official university, funder, foundation, and government scholarship pages.
 - Each card shows the award amount, deadline countdown, degree level, eligibility, and required documents.
 - **Ask AI** on any card opens a dedicated chat thread about that specific opportunity.
 
@@ -58,11 +59,20 @@ ScholarPilot pulls a curated catalog into one place, lets a student track what t
 - A daily Render cron job sweeps every tracked application and sends reminders at 7 days and 1 day out.
 - Every send is recorded on the application, so the daily job cannot repeat a reminder it already delivered.
 
+### Reviewed scholarship ingestion
+- A daily Render cron reads the listing sites in `FIRECRAWL_LISTING_URLS` for leads, then traces each lead to the funder's own page. Listing sites are discovery inputs only — none of them can ever be stored as a scholarship's source.
+- Featherless verifies each official page before anything is filed: it must be the funder's own page, actually describe a scholarship, and match the lead's title.
+- Nothing the pipeline finds reaches students automatically. Every result is filed as a submission for review at `/admin`, and an admin approving it is what writes the catalog row. Proposed changes and retirements of existing rows go through the same queue.
+- Gaps are handed to the reviewer rather than dropped: a page with no printed deadline arrives flagged `no-deadline`, and a lead whose official link could not be confirmed arrives flagged `no-source-url` with every link the resolver considered attached. Both are finished by hand — the pipeline never guesses a link or a date.
+- Firecrawl credits are a fixed lifetime pool tracked in `ingestion_runs`, and a run refuses to start once it is gone. Manual runs are capped separately and cannot start while another run is in flight.
+- Duplicates are blocked by a unique deterministic identity made from the normalized scholarship title and funder (falling back to the official owner domain when the funder is unknown). Canonical URL matching and conservative title similarity merge changed page URLs, multiple official sources, and minor title/year variations into the existing row.
+- A separate weekly cron deletes past-deadline catalog rows. Tracked applications remain usable because they keep a denormalized opportunity snapshot in Firestore.
+
 ### PWA
 - Installable to the home screen, with a service worker caching static assets and navigation.
 - Mobile-first layout with a bottom tab bar; desktop gets a sidebar.
 
-> **Note on iOS:** web push requires the PWA to be installed to the home screen (iOS 16.4+). Desktop Chrome is the most reliable path for notifications.
+
 
 ---
 
@@ -82,15 +92,15 @@ ScholarPilot pulls a curated catalog into one place, lets a student track what t
    │  ────────────────────  │                    │  ─────────────────────  │
    │  scholarships (46)     │                    │  Auth    → identity     │
    │  filter_cache (12h)    │                    │  Firestore → user data  │
-   │  read-only at runtime  │                    │  FCM     → web push     │
+   │  cron writes catalog  │                    │  FCM     → web push     │
    └────────────────────────┘                    └─────────────────────────┘
               ▲                                               ▲
               │                                               │
    ┌──────────┴───────────┐                     ┌─────────────┴───────────┐
-   │   Featherless AI     │                     │  Render Cron (daily)    │
+    │   Featherless AI     │                     │  Render Cron (daily)    │
    │   Qwen models        │                     │  → /api/cron/           │
-   │   chat · parse ·     │                     │    check-deadlines      │
-   │   filter · extract   │                     │  → firebase-admin → FCM │
+    │    filter · extract   │                     │    check-deadlines      │
+    │    verify catalog     │                     │    ingest · cleanup     │
    └──────────────────────┘                     └─────────────────────────┘
 ```
 
@@ -129,7 +139,7 @@ The filter cache lives in Postgres rather than memory: Render restarts and redep
 | Push | Firebase Cloud Messaging + `firebase-admin` |
 | AI | Featherless AI (Qwen) |
 | Web search | Brave Search API |
-| Hosting | Render (web service + cron job) |
+| Hosting | Render (web service + scheduled cron jobs) |
 
 ### API routes
 
@@ -141,21 +151,57 @@ The filter cache lives in Postgres rather than memory: Render restarts and redep
 | `POST /api/opportunities/search` | Scholarship name → web search → draft. |
 | `POST /api/chat` | Conversational turn, with profile, pipeline, catalog, and optional focused opportunity. |
 | `GET /api/cron/check-deadlines` | Daily reminder sweep. Requires `Authorization: Bearer $CRON_SECRET`. |
+| `GET /api/cron/ingest-scholarships` | Daily discovery run. Files what it finds for review; writes nothing to the catalog. Requires `Authorization: Bearer $CRON_SECRET`. |
+| `GET /api/cron/cleanup-scholarships` | Weekly deletion of expired catalog rows. Requires `Authorization: Bearer $CRON_SECRET`. |
+| `GET /api/admin/submissions` | Review queue plus counts. Admin only. |
+| `PATCH /api/admin/submissions/[id]` | Approve (with edits) or reject one submission. Approving is the only write to the catalog. Admin only. |
+| `GET /api/admin/ingest` | What a run would do, and what it would cost. Free. Admin only. |
+| `POST /api/admin/ingest` | Run ingestion now, with an optional `maxCredits` cap. Admin only. |
+
+Admin routes authenticate with the caller's Firebase ID token (`Authorization: Bearer <idToken>`)
+and require the account's verified email to appear in `ADMIN_EMAILS`. With `ADMIN_EMAILS` unset
+they answer `503`, never `200` — an empty allowlist means nobody, not everybody.
+
+### How a scholarship reaches the catalog
+
+```
+listing sites → funder's own page → Qwen extraction → /admin review → approval → Postgres
+     Firecrawl        resolver          verification       flags/edits     the only write
+```
+
+Nothing scraped is published automatically. The daily run discovers leads on listing sites,
+traces each one to the page hosted by the university, funder, or government that owns the award,
+reads the details off *that* page, and files a submission. A listing site can never become a
+scholarship's `source_url` — the rule is re-applied at approval, so it holds even for a link an
+admin types in by hand.
+
+Two gaps that used to cause silent drops now arrive flagged instead: a page with no printed
+deadline, and an award whose official link could not be confirmed. Both are filed with the field
+left empty and every link the resolver considered attached, for a reviewer to finish at `/admin`.
+Changes to rows already in the catalog, and proposals to retire rows whose pages no longer verify,
+go through the same queue with an old-vs-new diff.
 
 ### Project structure
 
 ```
 .
 ├── app/
+│   ├── admin/page.tsx           # Review queue — not linked from anywhere
 │   ├── api/
+│   │   ├── admin/ingest/route.ts
+│   │   ├── admin/submissions/route.ts
+│   │   ├── admin/submissions/[id]/route.ts
 │   │   ├── chat/route.ts
 │   │   ├── cron/check-deadlines/route.ts
+│   │   ├── cron/cleanup-scholarships/route.ts
+│   │   ├── cron/ingest-scholarships/route.ts
 │   │   ├── opportunities/route.ts
 │   │   ├── opportunities/parse/route.ts
 │   │   ├── opportunities/search/route.ts
 │   │   └── scholarships/route.ts
 │   ├── components/              # Screens, cards, modals, chat UI
 │   ├── hooks/
+│   │   ├── useAdminApi.ts       # Authenticated fetch for the admin routes
 │   │   ├── useApplications.ts   # Firestore pipeline
 │   │   ├── useChatThreads.ts    # Firestore chat threads
 │   │   ├── useNotifications.ts  # FCM permission + token
@@ -172,6 +218,18 @@ The filter cache lives in Postgres rather than memory: Render restarts and redep
 │   └── {,opportunities,applications,chat,profile}/page.tsx
 ├── lib/
 │   ├── db.ts                    # Postgres pool
+│   ├── admin/auth.ts            # ADMIN_EMAILS gate over Firebase ID tokens
+│   ├── ingestion/               # Discovery → resolution → verification → review
+│   │   ├── index.ts             # The run itself
+│   │   ├── budget.ts            # Firecrawl credit ledger
+│   │   ├── candidates.ts        # Durable lead queue with backoff
+│   │   ├── discovery.ts         # Listing pages and Brave queries
+│   │   ├── fetch.ts             # Free HTTP first, Firecrawl when needed
+│   │   ├── resolve.ts           # Listing article → funder's own page
+│   │   ├── sources.ts           # Aggregator blocklist and source gate
+│   │   ├── store.ts             # Catalog upserts, applied on approval
+│   │   ├── submissions.ts       # Review queue: file, approve, reject
+│   │   └── verify.ts            # Qwen extraction off the official page
 │   └── firebase/{client,admin}.ts
 ├── public/
 │   ├── firebase-messaging-sw.js # FCM background handler
@@ -193,6 +251,7 @@ The filter cache lives in Postgres rather than memory: Render restarts and redep
 - A Postgres database (Render Postgres, or local)
 - A Firebase project with **Auth**, **Firestore**, and **Cloud Messaging** enabled
 - A [Featherless AI](https://featherless.ai) API key
+- A [Firecrawl](https://www.firecrawl.dev/) API key
 - A [Brave Search](https://brave.com/search/api/) API key (free tier: 2,000 queries/month)
 
 ### 1. Install
@@ -213,6 +272,21 @@ Fill in `.env.local`:
 DATABASE_URL=postgresql://user:password@host/dbname
 FEATHERLESS_API_KEY=
 BRAVE_SEARCH_API_KEY=
+
+# Ingestion. Listing sites are where leads are discovered — anything listed here
+# can never be stored as a scholarship's source. Values can be comma-, semicolon-,
+# or newline-separated. See .env.example for the optional tuning knobs.
+FIRECRAWL_API_KEY=
+FIRECRAWL_BASE_URL=https://api.firecrawl.dev/v2
+FIRECRAWL_LISTING_URLS=https://www.opportunitiesforafricans.com/category/scholarships/
+FIRECRAWL_LIFETIME_CREDIT_BUDGET=10000
+FIRECRAWL_RUN_CREDIT_BUDGET=28
+FIRECRAWL_CONCURRENCY=1
+FIRECRAWL_REQUEST_TIMEOUT_MS=120000
+FEATHERLESS_EXTRACTION_MODEL=Qwen/Qwen2.5-72B-Instruct
+
+# Who may approve scraped scholarships at /admin. Server-only; unset means nobody.
+ADMIN_EMAILS=you@example.com
 
 # Firebase browser SDK — public by design; Firestore rules protect the data.
 NEXT_PUBLIC_FIREBASE_API_KEY=
@@ -272,19 +346,25 @@ Both `lint` and `build` must pass before pushing.
 
 ## 🚢 Deployment
 
-The app deploys to **Render** from [`render.yaml`](render.yaml) as a Blueprint — a web service plus a daily cron job. It runs as a Node service, not a static site: the API routes need a server at runtime.
+The app deploys to **Render** from [`render.yaml`](render.yaml) as a Blueprint — a web service plus three scheduled cron jobs. It runs as a Node service, not a static site: the API routes need a server at runtime.
 
-1. **Push and create the Blueprint.** Render reads `render.yaml` and provisions both services. Every secret is declared `sync: false`, so Render prompts for the values in the dashboard rather than reading them from git.
+1. **Push and create the Blueprint.** Render reads `render.yaml` and provisions the web service plus the deadline, ingestion, and cleanup cron services. Every secret is declared `sync: false`, so Render prompts for the values in the dashboard rather than reading them from git.
 
 2. **Fill in the web service's environment variables** — the same set as `.env.local`. `CRON_SECRET` is generated automatically.
 
+   Apply the latest Postgres schema with `npm run db:schema` before enabling ingestion. This adds crawl time, official source type, and unique identity fields to existing databases.
+
 3. **Wire up the cron job.** Set `APP_URL` to the deployed web service URL (e.g. `https://scholarpilot.onrender.com`), and copy the generated `CRON_SECRET` from the web service across to the cron service. They must match or every run gets a 401.
+
+   Set `FIRECRAWL_API_KEY` and `FIRECRAWL_SOURCE_URLS` on the web service. `FIRECRAWL_SOURCE_URLS` is a comma-, semicolon-, or newline-separated list of known official scholarship pages. Do not put directories, blogs, or search-result pages in this list.
+
+   Keep `FIRECRAWL_CONCURRENCY=1` on low-concurrency plans. Each URL is scraped once and then sent to Featherless for verification and extraction. Increase concurrency only when the Firecrawl account has matching browser capacity.
 
 4. **Deploy Firestore rules** (`firebase deploy --only firestore:rules`) — these are not part of the Render deploy.
 
 5. **Add your Render domain to Firebase** under *Authentication → Settings → Authorized domains*, or sign-in will be rejected in production.
 
-6. **Verify the cron endpoint:**
+6. **Verify the cron endpoints:**
 
    ```bash
    curl -H "Authorization: Bearer $CRON_SECRET" \
@@ -293,9 +373,17 @@ The app deploys to **Render** from [`render.yaml`](render.yaml) as a Blueprint �
 
    Run it twice. The second run must report skips rather than sending again — that is the dedupe working. A request with no header must return 401.
 
-The cron fires at `12 6 * * *` (06:12 UTC), deliberately off the hour so it isn't queued behind every blueprint scheduled at `:00`.
+   After Firecrawl configuration is present, verify ingestion with:
 
-> **Free tier:** Render spins services down when idle, so the first request after a quiet period takes ~30s. Warm the app before a demo, and warm Discover too — the discipline filter's 12h cache is cold after a redeploy.
+   ```bash
+   curl -H "Authorization: Bearer $CRON_SECRET" \
+     https://your-app.onrender.com/api/cron/ingest-scholarships
+   ```
+
+   The response reports crawled documents, AI-verified records, inserts, and updates. The cleanup endpoint reports how many past-deadline records were deleted.
+
+Ingestion runs daily at `05:42 UTC`, deadline reminders at `06:12 UTC`, and expired-row cleanup every Sunday at `04:15 UTC`. Each schedule is deliberately off the hour to reduce queue contention.
+
 
 ---
 
@@ -305,17 +393,17 @@ The cron fires at `12 6 * * *` (06:12 UTC), deliberately off the hour so it isn'
 - **`FIREBASE_SERVICE_ACCOUNT_JSON` bypasses those rules by design** — it is what lets the cron job read across users. It is server-only and must never carry a `NEXT_PUBLIC_` prefix.
 - **`NEXT_PUBLIC_FIREBASE_*` values ship in the browser bundle.** That is expected: Firebase client config is public, and the rules are what protect the data.
 - **`.env.local` is gitignored** and must never be committed.
-- **`/api/cron/check-deadlines` is guarded by a bearer token** and refuses to run at all if `CRON_SECRET` is unset.
-- AI-extracted opportunities are **never saved without user confirmation**.
+- **All `/api/cron/*` routes are guarded by a bearer token** and refuse to run at all if `CRON_SECRET` is unset.
+- Automated catalog records are saved only after Featherless verifies the scraped official page and returns its source type, title, and exact open deadline. The accepted `university`, `funder`, or `government` classification is retained in Postgres for auditing.
 
 ---
 
 ## 🔮 Future work
 
-- **Recurring deadlines.** Annual awards whose cycle has closed are currently rolled forward by hand. A `recurring` column on `scholarships` is the durable fix.
-- **URL ingestion.** Today users paste page text. Server-side fetching hits bot walls, JS-rendered pages, and PDFs — worth doing, but not a small job.
-- **Wider catalog coverage.** Some funders (DAAD among them) sit behind bot protection and need a different ingestion path.
-- **Richer notification windows.** 7-day and 1-day reminders are hardcoded; per-user preferences would be better.
+- **Recurring deadlines.** 
+- **Wider catalog coverage.** 
+- **Richer notification windows.** 
+- **School website integration for seamless application and tracking**
 
 ---
 

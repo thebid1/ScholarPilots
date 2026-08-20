@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.firecrawl.dev)",
+      "WebFetch(domain:www.firecrawl.dev)",
+      "Bash(echo \"--- exit: $? ---\")",
+      "Bash(node -e ' *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f \"next-server\")",
+      "Bash(curl -s -o /tmp/login.html -w \"%{http_code}\\\\n\" http://localhost:3001/admin/login)",
+      "Bash(echo \"--- exit $?\")",
+      "Bash(git grep *)"
+    ]
+  }
+}

@@ -25,9 +25,67 @@ services:
       # packages live, so `next build` would fail. Render already sets
       # NODE_ENV=production at runtime on its own.
 
-      # Render Postgres — read-only scholarship catalog at runtime.
+      # Render Postgres — shared catalog read by the app and written by cron ingestion.
       - key: DATABASE_URL
         sync: false
+
+      # Firecrawl ingestion. Discovery runs against listing sites; the pipeline
+      # traces each lead to the funder's own page and files it for review at
+      # /admin. Nothing it finds reaches the catalog without an approval.
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: FIRECRAWL_BASE_URL
+        value: https://api.firecrawl.dev/v2
+      # Listing pages leads are discovered on. Anything set here is automatically
+      # barred from ever being stored as a scholarship's source.
+      - key: FIRECRAWL_LISTING_URLS
+        sync: false
+      # Deprecated name for the same setting, still read for older deployments.
+      - key: FIRECRAWL_SOURCE_URLS
+        sync: false
+      # Optional Brave queries for finding listing pages beyond the configured set.
+      - key: FIRECRAWL_SEARCH_QUERIES
+        sync: false
+      - key: FIRECRAWL_PAGES_PER_SOURCE
+        value: "10"
+      # The credit allowance is a fixed lifetime pool, tracked in ingestion_runs.
+      # Raise the lifetime figure only when more credits have actually been bought.
+      - key: FIRECRAWL_LIFETIME_CREDIT_BUDGET
+        value: "10000"
+      - key: FIRECRAWL_RUN_CREDIT_BUDGET
+        value: "28"
+      - key: FIRECRAWL_CONCURRENCY
+        value: "1"
+      - key: FIRECRAWL_REQUEST_TIMEOUT_MS
+        value: "120000"
+      # Pipeline shape — leads traced per run, rows re-checked per run, retries
+      # before a stubborn lead is abandoned, Brave fallbacks, and the wall-clock
+      # stop that keeps a run inside the cron's 900-second timeout.
+      - key: INGESTION_NEW_CANDIDATES_PER_RUN
+        value: "10"
+      - key: INGESTION_REFRESH_PER_RUN
+        value: "5"
+      - key: INGESTION_MAX_CANDIDATE_ATTEMPTS
+        value: "4"
+      - key: INGESTION_SEARCH_FALLBACKS_PER_RUN
+        value: "3"
+      - key: INGESTION_DEADLINE_MS
+        value: "720000"
+      - key: FEATHERLESS_EXTRACTION_MODEL
+        value: Qwen/Qwen2.5-72B-Instruct
+
+      # Who may approve scraped scholarships at /admin. Comma-separated emails,
+      # matched against the signed-in Firebase account's email. Server only. Unset
+      # means nobody is an admin and every admin route answers 503. Reviewer
+      # accounts are made by hand in the Firebase console and sign in at
+      # /admin/login, a separate page from the student one with no sign-up.
+      - key: ADMIN_EMAILS
+        sync: false
+      # Reviewer sessions are held to a stricter bar than student ones: approval
+      # requires a recent sign-in, checked against the ID token's `auth_time`, so
+      # a session left open never silently confers publish rights.
+      - key: ADMIN_SESSION_MAX_AGE_MINUTES
+        value: "720"
 
       # Every AI call in the app: discipline filter, chat, "Search by name"
       # extraction, and the pasted-listing parser.
@@ -58,7 +116,7 @@ services:
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
 
-      # Shared secret guarding /api/cron/check-deadlines.
+      # Shared secret guarding every /api/cron/* endpoint.
       - key: CRON_SECRET
         generateValue: true
 
@@ -84,5 +142,42 @@ services:
         sync: false
       # Must match the web service's generated CRON_SECRET — copy it across in
       # the dashboard after the first deploy.
+      - key: CRON_SECRET
+        sync: false
+
+  # Discover new scholarships every morning and file them for review. The run
+  # writes nothing students can see — approval at /admin is what publishes.
+  - type: cron
+    name: scholarpilot-scholarship-ingestion
+    runtime: node
+    plan: free
+    region: frankfurt
+    schedule: "42 5 * * *"
+    buildCommand: "true"
+    startCommand: >-
+      curl -fsS --max-time 900
+      -H "Authorization: Bearer $CRON_SECRET"
+      "$APP_URL/api/cron/ingest-scholarships"
+    envVars:
+      - key: APP_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+
+  # Delete expired rows from the shared catalog once each week.
+  - type: cron
+    name: scholarpilot-scholarship-cleanup
+    runtime: node
+    plan: free
+    region: frankfurt
+    schedule: "15 4 * * 0"
+    buildCommand: "true"
+    startCommand: >-
+      curl -fsS --max-time 120
+      -H "Authorization: Bearer $CRON_SECRET"
+      "$APP_URL/api/cron/cleanup-scholarships"
+    envVars:
+      - key: APP_URL
+        sync: false
       - key: CRON_SECRET
         sync: false

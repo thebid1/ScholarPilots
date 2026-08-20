@@ -20,6 +20,9 @@
 # working notes — local only, not part of the shipped repo
 PIPELINE_NOTES.md
 
+# ingestion preview reports — local inspection output, can contain long page excerpts
+ingestion-preview*.json
+
 # misc
 .DS_Store
 Thumbs.db

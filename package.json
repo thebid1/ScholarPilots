@@ -10,6 +10,8 @@
     "upload:scholarships": "node scripts/upload-scholarships.mjs",
     "seed": "npx tsx scripts/seed-database.ts",
     "sync:scholarships": "npx tsx scripts/sync-scholarships.ts",
+    "ingest:scholarships": "npx tsx scripts/ingest-scholarships.ts",
+    "preview:ingestion": "npx tsx scripts/preview-ingestion.ts",
     "db:schema": "npx tsx scripts/run-schema.ts"
   },
   "dependencies": {

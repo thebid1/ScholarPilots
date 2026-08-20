@@ -1,5 +1,5 @@
 import { App, cert, getApps, initializeApp } from 'firebase-admin/app';
-import { Auth, getAuth } from 'firebase-admin/auth';
+import { Auth, DecodedIdToken, getAuth } from 'firebase-admin/auth';
 import { Firestore, getFirestore } from 'firebase-admin/firestore';
 import { Messaging, getMessaging } from 'firebase-admin/messaging';
 
@@ -48,11 +48,14 @@ export function getAdminMessaging(): Messaging | null {
 }
 
 /**
- * Resolves the caller's uid from an `Authorization: Bearer <idToken>` header.
- * Returns null for a missing, malformed, expired, or revoked token — routes
- * must treat null as 401 rather than falling back to a query parameter.
+ * Decodes and verifies the caller's `Authorization: Bearer <idToken>` header,
+ * returning the whole token. Callers that only need identity should use
+ * `verifyRequest`; the full claims are needed for the admin allowlist, which
+ * matches on the verified email rather than the uid.
+ *
+ * Returns null for a missing, malformed, expired, or revoked token.
  */
-export async function verifyRequest(request: Request): Promise<string | null> {
+export async function verifyRequestToken(request: Request): Promise<DecodedIdToken | null> {
   const header = request.headers.get('authorization') ?? '';
   const match = header.match(/^Bearer (.+)$/i);
   if (!match) return null;
@@ -61,9 +64,17 @@ export async function verifyRequest(request: Request): Promise<string | null> {
   if (!auth) return null;
 
   try {
-    const decoded = await auth.verifyIdToken(match[1], true);
-    return decoded.uid;
+    return await auth.verifyIdToken(match[1], true);
   } catch {
     return null;
   }
+}
+
+/**
+ * Resolves the caller's uid from an `Authorization: Bearer <idToken>` header.
+ * Returns null for a missing, malformed, expired, or revoked token — routes
+ * must treat null as 401 rather than falling back to a query parameter.
+ */
+export async function verifyRequest(request: Request): Promise<string | null> {
+  return (await verifyRequestToken(request))?.uid ?? null;
 }
