@@ -60,7 +60,9 @@ services:
         value: "120000"
       # Pipeline shape — leads traced per run, rows re-checked per run, retries
       # before a stubborn lead is abandoned, Brave fallbacks, and the wall-clock
-      # stop that keeps a run inside the cron's 900-second timeout.
+      # stop. The stop is set for the tightest host: Vercel's hobby plan kills a
+      # function at 300 seconds, and a run killed mid-flight leaves its credits
+      # reserved against the lifetime pool.
       - key: INGESTION_NEW_CANDIDATES_PER_RUN
         value: "10"
       - key: INGESTION_REFRESH_PER_RUN
@@ -70,7 +72,7 @@ services:
       - key: INGESTION_SEARCH_FALLBACKS_PER_RUN
         value: "3"
       - key: INGESTION_DEADLINE_MS
-        value: "720000"
+        value: "240000"
       - key: FEATHERLESS_EXTRACTION_MODEL
         value: Qwen/Qwen2.5-72B-Instruct
 
@@ -155,7 +157,7 @@ services:
     schedule: "42 5 * * *"
     buildCommand: "true"
     startCommand: >-
-      curl -fsS --max-time 900
+      curl -fsS --max-time 300
       -H "Authorization: Bearer $CRON_SECRET"
       "$APP_URL/api/cron/ingest-scholarships"
     envVars:

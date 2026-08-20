@@ -27,9 +27,9 @@ export function runBudget(): number {
   return integerSetting('FIRECRAWL_RUN_CREDIT_BUDGET', 28, 1, 5_000);
 }
 
-/** How long a run may take before it stops itself, comfortably inside the cron's own timeout. */
+/** How long a run may take before it stops itself, inside the 300-second function limit. */
 export function runDeadlineMs(): number {
-  return integerSetting('INGESTION_DEADLINE_MS', 720_000, 30_000, 3_000_000);
+  return integerSetting('INGESTION_DEADLINE_MS', 240_000, 30_000, 3_000_000);
 }
 
 /**
@@ -50,7 +50,7 @@ export async function lifetimeSpend(): Promise<number> {
 
 /**
  * Whether a run is already in flight, so pressing "Run ingestion now" while the
- * cron is working cannot reserve the same credits twice. A 900-second request is
+ * cron is working cannot reserve the same credits twice. A multi-minute request is
  * long enough that a reload looks idle, which is exactly when a second run gets
  * started by hand.
  *

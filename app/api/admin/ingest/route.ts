@@ -15,7 +15,7 @@ import { runBudget, runInFlight } from '@/lib/ingestion/budget';
  * Neither writes to `scholarships`. A run files submissions; approval publishes.
  */
 export const dynamic = 'force-dynamic';
-export const maxDuration = 900;
+export const maxDuration = 300;
 
 /** A hand-triggered run is capped well below the daily one — this is for spot checks. */
 const MAX_MANUAL_CREDITS = 50;
