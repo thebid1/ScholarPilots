@@ -18,7 +18,7 @@
  */
 
 import { webSearch } from '@/app/lib/web-search';
-import { callFeatherless } from './featherless';
+import { callGemini } from './gemini';
 import { checkOfficialSource, checkStructuralSource } from './sources';
 import { asString, canonicalUrl, identityText, integerSetting, ownerDomain } from './util';
 import type { CrawledDocument, PageLink } from './fetch';
@@ -212,7 +212,7 @@ export async function resolveOfficialUrl(
   let parsed: Record<string, unknown> | null = null;
   if (links.length > 0) {
     try {
-      parsed = await callFeatherless(selectionPrompt(document, links), 600);
+      parsed = await callGemini(selectionPrompt(document, links), 600);
     } catch (error) {
       return {
         resolved: null,

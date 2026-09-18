@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { generateJson, geminiConfigured, geminiModel } from '@/lib/gemini';
 import { braveApiKey, fetchPageText, webSearch } from '@/app/lib/web-search';
 
 /**
@@ -6,7 +7,7 @@ import { braveApiKey, fetchPageText, webSearch } from '@/app/lib/web-search';
  *
  * The user types "Chevening" and gets a filled-in form back. This route does the
  * browsing itself — Brave for the search, a plain fetch for the page — and uses
- * Featherless only for the step a model is actually needed for: turning page
+ * Gemini only for the step a model is actually needed for: turning page
  * prose into structured fields.
  *
  * An earlier version let the model drive via tool calls. It researched well but
@@ -22,20 +23,11 @@ import { braveApiKey, fetchPageText, webSearch } from '@/app/lib/web-search';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
-const FEATHERLESS_API_URL = 'https://api.featherless.ai/v1/chat/completions';
 /**
- * Extraction is a read-and-reformat job, not a reasoning one, so this is chosen
- * for latency. Kimi-K3 does support tool calling and answers a trivial prompt in
- * ~7s, but it is a reasoning model and on a real two-page context it ran past a
- * 75s timeout. This one returns the same payload correctly in ~14s.
- *
- * Featherless documents native tool calling for Kimi-K2-Instruct and Qwen 3 only
- * (page last edited Aug 2025, so it predates K3). For models outside that list
- * the documented approach is response_format json_object plus an explicit field
- * spec — which is what this route does, so the model choice is free to be made
- * on latency alone.
+ * Uses the shared Gemini extraction model (GEMINI_MODEL / GEMINI_EXTRACTION_MODEL),
+ * grounded with Google Search so the deadline and funder can be checked against
+ * live sources, not just the fetched page text.
  */
-const MODEL = 'Qwen/Qwen2.5-72B-Instruct';
 const MODEL_TIMEOUT_MS = 60_000;
 /**
  * Pages fetched per lookup. The programme page carries most fields; the runner-up
@@ -86,42 +78,21 @@ interface Draft {
 /**
  * Returns the model's raw parsed JSON, not a Draft. The shape is whatever the
  * model emitted — normalizeDraft is what turns it into a Draft.
+ *
+ * Grounded with Google Search so the deadline and funder can be checked against
+ * live sources, not just the fetched page text.
  */
 async function callModel(
   prompt: string,
-  sources: string,
-  apiKey: string
-): Promise<Record<string, unknown>> {
-  const response = await fetch(FEATHERLESS_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: 'user', content: `${prompt}\n\nSources:\n${sources}` },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0,
-      max_tokens: 2000,
-    }),
-    signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
+  sources: string
+): Promise<Record<string, unknown> | null> {
+  return generateJson(`${prompt}\n\nSources:\n${sources}`, {
+    model: geminiModel(),
+    temperature: 0,
+    maxOutputTokens: 2000,
+    timeoutMs: MODEL_TIMEOUT_MS,
+    googleSearch: true,
   });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`Featherless returned ${response.status}: ${detail.slice(0, 200)}`);
-  }
-
-  const data = await response.json();
-  const choice = data.choices?.[0];
-  if (!choice?.message?.content) {
-    throw new Error('Featherless returned no content');
-  }
-
-  return JSON.parse(choice.message.content);
 }
 
 function asStringArray(value: unknown): string[] {
@@ -173,8 +144,7 @@ function normalizeDraft(raw: Record<string, unknown>, fallbackName: string, sour
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.FEATHERLESS_API_KEY;
-  if (!apiKey) {
+  if (!geminiConfigured()) {
     return NextResponse.json({ error: 'Search is not configured.' }, { status: 503 });
   }
   if (!braveApiKey()) {
@@ -249,7 +219,13 @@ export async function POST(req: NextRequest) {
     }
 
     const sources = sourceTexts.join('\n\n---\n\n');
-    const rawDraft = await callModel(EXTRACTION_PROMPT, sources, apiKey);
+    const rawDraft = await callModel(EXTRACTION_PROMPT, sources);
+    if (!rawDraft) {
+      return NextResponse.json(
+        { error: `Couldn't extract details for "${name}". Paste the listing text instead.` },
+        { status: 502 }
+      );
+    }
     const draft = normalizeDraft(rawDraft, name, topUrls);
 
     console.log(`[search] "${name}" extracted from ${sourceTexts.length} page(s)`, {

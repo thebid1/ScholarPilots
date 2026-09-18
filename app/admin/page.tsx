@@ -306,7 +306,7 @@ export default function AdminPage() {
 
                 {!plan.configured && (
                   <p className="text-xs font-semibold" style={{ color: 'var(--amber)' }}>
-                    Firecrawl or Featherless is not configured on this deployment — a run would refuse
+                    Firecrawl or Gemini is not configured on this deployment — a run would refuse
                     to start.
                   </p>
                 )}

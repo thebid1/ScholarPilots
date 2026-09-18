@@ -17,7 +17,7 @@
  * point of the strict rule; the difference is who supplies the missing one.
  */
 
-import { callFeatherless } from './featherless';
+import { callGemini } from './gemini';
 import { hasInstitutionalSuffix } from './sources';
 import {
   asNumberOrNull, asString, asStringArray, isHttpUrl, isOpenDeadline,
@@ -160,8 +160,10 @@ Return ONLY a JSON object with these fields:
 - description: 2-3 sentence summary.
 - requiredDocs: array of documents the applicant must prepare and submit — transcripts, reference letters, essays, a CV, proof of admission, a passport copy.
 - benefits: array of what the award itself provides — tuition coverage, monthly stipend, airfare, health insurance, accommodation.
+- sources: array of the URLs you consulted (via web search) to confirm the funder, the deadline, and that the award is currently open. Empty array if you used none.
 
 Rules:
+- You have live web search available. Use it to verify the deadline and funder against current authoritative pages; a current official page beats your training knowledge, but never substitute it for what THIS page states.
 - Use ONLY facts stated on this page. Never fill gaps from prior knowledge about the programme.
 - deadline must be an exact YYYY-MM-DD date stated on the page. If the page gives a partial date ("March 2027"), a rolling or ongoing deadline, or no deadline at all, return "" — never invent or infer a day. Returning "" is expected and useful; a guessed date is not.
 - requiredDocs and benefits are different things. What the applicant hands over goes in requiredDocs; what the award pays for goes in benefits. Never put funding coverage in requiredDocs.
@@ -219,7 +221,9 @@ export async function verifyOfficialPage(
 
   let parsed: Record<string, unknown> | null;
   try {
-    parsed = await callFeatherless(verificationPrompt(document, expected.title ?? ''), 2_500);
+    parsed = await callGemini(verificationPrompt(document, expected.title ?? ''), 2_500, {
+      googleSearch: true,
+    });
   } catch (error) {
     return fail(`verification call failed: ${String(error).slice(0, 120)}`);
   }

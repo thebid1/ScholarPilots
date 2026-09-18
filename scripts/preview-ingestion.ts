@@ -14,25 +14,6 @@ import { checkOfficialSource, listingUrls, pagesPerSource, searchQueries } from 
 import { ownerDomain } from '../lib/ingestion/util';
 import { verifyOfficialPage, type VerificationOutcome } from '../lib/ingestion/verify';
 
-/**
- * Watch the ingestion pipeline run for real, without letting it near the catalog
- * or the review queue.
- *
- * This exercises the actual stages — discovery, resolution, Firecrawl, Qwen
- * verification — and writes everything it saw to a JSON file for inspection.
- * What it deliberately does not do is file submissions, write to `scholarships`,
- * or mark candidates terminal. Each candidate's report ends with the submission a
- * real run *would* have filed, flags included, which is the thing worth checking
- * before spending a day's credits.
- *
- * Candidates are therefore left `pending` with their attempt count untouched, so
- * the real run can still process them later. The `ingestion_runs` row *is*
- * written: it is the credit ledger, and spend that goes unrecorded makes the
- * lifetime cap meaningless.
- *
- *   npm run preview:ingestion -- --listing-only          # free: what gets discovered
- *   npm run preview:ingestion -- --max-credits=6 --candidates=3
- */
 
 const DEFAULT_OUT = 'ingestion-preview.json';
 
@@ -103,7 +84,9 @@ async function main() {
   const outPath = resolvePath(process.cwd(), flagValue('out') ?? DEFAULT_OUT);
 
   if (!process.env.FIRECRAWL_API_KEY) throw new Error('FIRECRAWL_API_KEY is not configured.');
-  if (!process.env.FEATHERLESS_API_KEY) throw new Error('FEATHERLESS_API_KEY is not configured.');
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_CLOUD_PROJECT) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_CLOUD_PROJECT are not configured.');
+  }
 
   const startedAt = Date.now();
   const ledger = await RunLedger.open({ maxCredits });

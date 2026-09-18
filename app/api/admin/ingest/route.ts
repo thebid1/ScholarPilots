@@ -22,7 +22,9 @@ const MAX_MANUAL_CREDITS = 50;
 
 function configured(): string | null {
   if (!process.env.FIRECRAWL_API_KEY) return 'FIRECRAWL_API_KEY is not configured.';
-  if (!process.env.FEATHERLESS_API_KEY) return 'FEATHERLESS_API_KEY is not configured.';
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_CLOUD_PROJECT) {
+    return 'GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_CLOUD_PROJECT are not configured.';
+  }
   return null;
 }
 

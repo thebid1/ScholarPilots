@@ -73,8 +73,8 @@ services:
         value: "3"
       - key: INGESTION_DEADLINE_MS
         value: "240000"
-      - key: FEATHERLESS_EXTRACTION_MODEL
-        value: Qwen/Qwen2.5-72B-Instruct
+      - key: GEMINI_EXTRACTION_MODEL
+        value: gemini-3-flash-preview
 
       # Who may approve scraped scholarships at /admin. Comma-separated emails,
       # matched against the signed-in Firebase account's email. Server only. Unset
@@ -90,9 +90,18 @@ services:
         value: "720"
 
       # Every AI call in the app: discipline filter, chat, "Search by name"
-      # extraction, and the pasted-listing parser.
-      - key: FEATHERLESS_API_KEY
+      # extraction, the pasted-listing parser, and ingestion verification.
+      # Agent Platform (Vertex AI) auth — a stringified service account + project.
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false
+      - key: GOOGLE_CLOUD_PROJECT
+        sync: false
+      - key: GOOGLE_CLOUD_LOCATION
+        value: global
+      # Models per job. GEMINI_MODEL serves chat, the filter, and the parser;
+      # GEMINI_EXTRACTION_MODEL serves ingestion verification and search-by-name.
+      - key: GEMINI_MODEL
+        value: gemini-3-flash-preview
 
       # Web search for "Search by name" in the Add Opportunity modal.
       - key: BRAVE_SEARCH_API_KEY

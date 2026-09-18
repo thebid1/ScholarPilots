@@ -511,7 +511,9 @@ export async function planIngestion(options: IngestionOptions = {}): Promise<Ing
 /** Run the pipeline. Stops cleanly on either the credit cap or the wall clock. */
 export async function runIngestion(options: IngestionOptions = {}): Promise<IngestionResult> {
   if (!process.env.FIRECRAWL_API_KEY) throw new Error('FIRECRAWL_API_KEY is not configured.');
-  if (!process.env.FEATHERLESS_API_KEY) throw new Error('FEATHERLESS_API_KEY is not configured.');
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_CLOUD_PROJECT) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_CLOUD_PROJECT are not configured.');
+  }
 
   const startedAt = Date.now();
   const ledger = await RunLedger.open(options);

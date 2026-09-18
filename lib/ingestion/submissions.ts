@@ -1,12 +1,3 @@
-/**
- * The review queue: filing what the pipeline extracted, and writing it to the
- * catalog once a reviewer has approved it.
- *
- * [lib/db.ts](lib/db.ts) exposes no transactions, so approval writes in the order
- * catalog → submission → candidate. Interrupted halfway, pressing Approve again
- * converges rather than duplicating: `saveScholarship` is an idempotent upsert.
- */
-
 import { queryDb } from '@/lib/db';
 import { markCandidateStored } from './candidates';
 import {

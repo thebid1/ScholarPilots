@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { generateContent, GeminiError, geminiConfigured, geminiModel } from '@/lib/gemini';
 import { Application, Scholarship, UserProfile } from '@/app/types';
 
 /**
@@ -19,15 +20,11 @@ import { Application, Scholarship, UserProfile } from '@/app/types';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const FEATHERLESS_API_URL = 'https://api.featherless.ai/v1/chat/completions';
 /**
- * Chosen on measured latency for a conversational turn: ~13s here, against ~16s
- * for Kimi-K2-Instruct and ~38s for Qwen2.5-72B. The Kimi reasoning models
- * answer this well but take 49-79s, which is too long to sit behind a typing
- * indicator.
+ * The model is configurable via GEMINI_MODEL (default gemini-3.6-flash). 45s is
+ * the ceiling for a conversational turn behind a typing indicator.
  */
-const MODEL = 'Qwen/Qwen3-30B-A3B-Instruct-2507';
-const MODEL_TIMEOUT_MS = 45_000;
+const CHAT_TIMEOUT_MS = 45_000;
 
 /** Turns of history sent back. Enough for follow-ups without an unbounded prompt. */
 const HISTORY_TURNS = 8;
@@ -179,8 +176,7 @@ HOW TO ANSWER:
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.FEATHERLESS_API_KEY;
-  if (!apiKey) {
+  if (!geminiConfigured()) {
     return NextResponse.json({ error: 'Chat is not configured.' }, { status: 503 });
   }
 
@@ -215,45 +211,24 @@ export async function POST(req: NextRequest) {
     year: 'numeric',
   });
 
-  const messages = [
-    { role: 'system', content: buildSystemPrompt(profile, applications, scholarships, today, focus) },
-    // The client stores assistant turns as 'model' (a Gemini convention); the
-    // OpenAI-compatible API expects 'assistant'.
-    ...history.slice(-HISTORY_TURNS).map((m) => ({
-      role: m.role === 'model' ? 'assistant' : m.role,
-      content: m.content,
-    })),
-  ];
+  const systemInstruction = buildSystemPrompt(profile, applications, scholarships, today, focus);
+  // The client stores assistant turns as 'model', which is Gemini's own role
+  // name; the historic 'assistant' alias is normalised onto it.
+  const contents = history.slice(-HISTORY_TURNS).map((m) => ({
+    role: (m.role === 'assistant' ? 'model' : m.role) as 'user' | 'model',
+    content: m.content,
+  }));
 
   try {
-    const response = await fetch(FEATHERLESS_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages,
-        // Higher than the extraction routes: this is conversation, and at 0 the
-        // replies read like a form letter across a long session.
-        temperature: 0.4,
-        max_tokens: 1200,
-      }),
-      signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
+    const { text: reply } = await generateContent(contents, {
+      model: geminiModel(),
+      systemInstruction,
+      // Higher than the extraction routes: this is conversation, and at 0 the
+      // replies read like a form letter across a long session.
+      temperature: 0.4,
+      maxOutputTokens: 1200,
+      timeoutMs: CHAT_TIMEOUT_MS,
     });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      console.error(`[chat] Featherless ${response.status}: ${detail.slice(0, 200)}`);
-      return NextResponse.json(
-        { error: 'I could not reach the model just then. Try again in a moment.' },
-        { status: 502 }
-      );
-    }
-
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content?.trim();
 
     if (!reply) {
       return NextResponse.json(
@@ -265,14 +240,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply });
   } catch (error) {
     const timedOut = error instanceof Error && error.name === 'TimeoutError';
+    const failed = error instanceof GeminiError;
     console.error('[chat] Failed:', error);
-    return NextResponse.json(
-      {
-        error: timedOut
-          ? 'That took too long to think about. Try asking something more specific.'
-          : 'Something went wrong. Try again.',
-      },
-      { status: timedOut ? 504 : 500 }
-    );
+
+    if (timedOut) {
+      return NextResponse.json(
+        { error: 'That took too long to think about. Try asking something more specific.' },
+        { status: 504 }
+      );
+    }
+    if (failed) {
+      return NextResponse.json(
+        { error: 'I could not reach the model just then. Try again in a moment.' },
+        { status: 502 }
+      );
+    }
+    return NextResponse.json({ error: 'Something went wrong. Try again.' }, { status: 500 });
   }
 }

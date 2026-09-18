@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryDb } from '@/lib/db';
-import { filterByDiscipline } from '@/app/lib/featherless-filter';
+import { filterByDiscipline } from '@/app/lib/discipline-filter';
 import { UserProfile, Scholarship } from '@/app/types';
 
 interface DbScholarship {

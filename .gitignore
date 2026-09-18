@@ -50,6 +50,11 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# Google Cloud service-account private keys — never commit these
+# (the app reads the key from GOOGLE_SERVICE_ACCOUNT_JSON instead)
+gen-lang-client-*.json
+serviceaccount.json
+
 # vercel
 .vercel
 

@@ -61,7 +61,7 @@ ScholarPilot pulls a curated catalog into one place, lets a student track what t
 
 ### Reviewed scholarship ingestion
 - A daily Render cron reads the listing sites in `FIRECRAWL_LISTING_URLS` for leads, then traces each lead to the funder's own page. Listing sites are discovery inputs only — none of them can ever be stored as a scholarship's source.
-- Featherless verifies each official page before anything is filed: it must be the funder's own page, actually describe a scholarship, and match the lead's title.
+- Gemini verifies each official page before anything is filed: it must be the funder's own page, actually describe a scholarship, and match the lead's title.
 - Nothing the pipeline finds reaches students automatically. Every result is filed as a submission for review at `/admin`, and an admin approving it is what writes the catalog row. Proposed changes and retirements of existing rows go through the same queue.
 - Gaps are handed to the reviewer rather than dropped: a page with no printed deadline arrives flagged `no-deadline`, and a lead whose official link could not be confirmed arrives flagged `no-source-url` with every link the resolver considered attached. Both are finished by hand — the pipeline never guesses a link or a date.
 - Firecrawl credits are a fixed lifetime pool tracked in `ingestion_runs`, and a run refuses to start once it is gone. Manual runs are capped separately and cannot start while another run is in flight.
@@ -97,8 +97,8 @@ ScholarPilot pulls a curated catalog into one place, lets a student track what t
               ▲                                               ▲
               │                                               │
    ┌──────────┴───────────┐                     ┌─────────────┴───────────┐
-    │   Featherless AI     │                     │  Render Cron (daily)    │
-   │   Qwen models        │                     │  → /api/cron/           │
+    │   Gemini             │                     │  Render Cron (daily)    │
+   │   Google Search      │                     │  → /api/cron/           │
     │    filter · extract   │                     │    check-deadlines      │
     │    verify catalog     │                     │    ingest · cleanup     │
    └──────────────────────┘                     └─────────────────────────┘
@@ -114,14 +114,14 @@ The cron job reads Firestore only. That is why each application carries a `snaps
 
 ### AI
 
-Every AI call goes to **Featherless AI** over its OpenAI-compatible endpoint. One provider, four jobs:
+Every AI call goes to **Gemini** over the Gemini API (`generativelanguage.googleapis.com`). One provider, four jobs:
 
 | Job | Model | Why |
 |---|---|---|
-| Discipline filter | `Qwen/Qwen2.5-72B-Instruct` | Decides which catalog entries suit a student's field. Results cached in Postgres for 12h. |
-| Chat | `Qwen/Qwen3-30B-A3B-Instruct-2507` | ~13s per turn, against ~16s for Kimi-K2 and ~38s for Qwen2.5-72B. Reasoning models answered well but took 49–79s — too long behind a typing indicator. |
-| Pasted-listing parser | `Qwen/Qwen2.5-72B-Instruct` | Structures pasted page text into a scholarship draft. |
-| Search-by-name extraction | `Qwen/Qwen2.5-72B-Instruct` | Turns Brave web results into a draft. |
+| Discipline filter | `gemini-3.6-flash` (via `GEMINI_MODEL`) | Decides which catalog entries suit a student's field. Results cached in Postgres for 12h. |
+| Chat | `gemini-3.6-flash` | A fast flash model suited to a conversational turn behind a typing indicator. |
+| Pasted-listing parser | `gemini-3.6-flash` | Structures pasted page text into a scholarship draft. |
+| Search-by-name extraction | `gemini-3.6-flash` (grounded with Google Search) | Turns Brave web results into a draft, verified against live sources. |
 
 The filter cache lives in Postgres rather than memory: Render restarts and redeploys would empty an in-process cache, and a 12h TTL would never be reached.
 
@@ -137,7 +137,7 @@ The filter cache lives in Postgres rather than memory: Render restarts and redep
 | User data | Firebase Firestore |
 | Auth | Firebase Auth (email/password) |
 | Push | Firebase Cloud Messaging + `firebase-admin` |
-| AI | Featherless AI (Qwen) |
+| AI | Gemini (Google AI Studio) |
 | Web search | Brave Search API |
 | Hosting | Render (web service + scheduled cron jobs) |
 
@@ -165,7 +165,7 @@ they answer `503`, never `200` — an empty allowlist means nobody, not everybod
 ### How a scholarship reaches the catalog
 
 ```
-listing sites → funder's own page → Qwen extraction → /admin review → approval → Postgres
+listing sites → funder's own page → Gemini extraction → /admin review → approval → Postgres
      Firecrawl        resolver          verification       flags/edits     the only write
 ```
 
@@ -208,7 +208,7 @@ go through the same queue with an old-vs-new diff.
 │   │   ├── useProfile.ts
 │   │   └── useUserOpportunities.ts
 │   ├── lib/
-│   │   ├── featherless-filter.ts  # Discipline filter + Postgres cache
+│   │   ├── discipline-filter.ts   # Discipline filter + Postgres cache
 │   │   ├── user-store.ts          # All Firestore reads/writes
 │   │   ├── web-search.ts          # Brave Search
 │   │   ├── mockData.ts            # Milestones, health score, date helpers
@@ -229,7 +229,7 @@ go through the same queue with an old-vs-new diff.
 │   │   ├── sources.ts           # Aggregator blocklist and source gate
 │   │   ├── store.ts             # Catalog upserts, applied on approval
 │   │   ├── submissions.ts       # Review queue: file, approve, reject
-│   │   └── verify.ts            # Qwen extraction off the official page
+│   │   └── verify.ts            # Gemini extraction off the official page
 │   └── firebase/{client,admin}.ts
 ├── public/
 │   ├── firebase-messaging-sw.js # FCM background handler
@@ -250,7 +250,7 @@ go through the same queue with an old-vs-new diff.
 - Node.js 20+
 - A Postgres database (Render Postgres, or local)
 - A Firebase project with **Auth**, **Firestore**, and **Cloud Messaging** enabled
-- A [Featherless AI](https://featherless.ai) API key
+- A [Gemini](https://aistudio.google.com/apikey) API key
 - A [Firecrawl](https://www.firecrawl.dev/) API key
 - A [Brave Search](https://brave.com/search/api/) API key (free tier: 2,000 queries/month)
 
@@ -270,7 +270,7 @@ Fill in `.env.local`:
 
 ```env
 DATABASE_URL=postgresql://user:password@host/dbname
-FEATHERLESS_API_KEY=
+GEMINI_API_KEY=
 BRAVE_SEARCH_API_KEY=
 
 # Ingestion. Listing sites are where leads are discovered — anything listed here
@@ -283,7 +283,7 @@ FIRECRAWL_LIFETIME_CREDIT_BUDGET=10000
 FIRECRAWL_RUN_CREDIT_BUDGET=28
 FIRECRAWL_CONCURRENCY=1
 FIRECRAWL_REQUEST_TIMEOUT_MS=120000
-FEATHERLESS_EXTRACTION_MODEL=Qwen/Qwen2.5-72B-Instruct
+GEMINI_EXTRACTION_MODEL=gemini-3.6-flash
 
 # Who may approve scraped scholarships at /admin. Server-only; unset means nobody.
 ADMIN_EMAILS=you@example.com
@@ -358,7 +358,7 @@ The app deploys to **Render** from [`render.yaml`](render.yaml) as a Blueprint �
 
    Set `FIRECRAWL_API_KEY` and `FIRECRAWL_SOURCE_URLS` on the web service. `FIRECRAWL_SOURCE_URLS` is a comma-, semicolon-, or newline-separated list of known official scholarship pages. Do not put directories, blogs, or search-result pages in this list.
 
-   Keep `FIRECRAWL_CONCURRENCY=1` on low-concurrency plans. Each URL is scraped once and then sent to Featherless for verification and extraction. Increase concurrency only when the Firecrawl account has matching browser capacity.
+   Keep `FIRECRAWL_CONCURRENCY=1` on low-concurrency plans. Each URL is scraped once and then sent to Gemini for verification and extraction. Increase concurrency only when the Firecrawl account has matching browser capacity.
 
 4. **Deploy Firestore rules** (`firebase deploy --only firestore:rules`) — these are not part of the Render deploy.
 
@@ -394,7 +394,7 @@ Ingestion runs daily at `05:42 UTC`, deadline reminders at `06:12 UTC`, and expi
 - **`NEXT_PUBLIC_FIREBASE_*` values ship in the browser bundle.** That is expected: Firebase client config is public, and the rules are what protect the data.
 - **`.env.local` is gitignored** and must never be committed.
 - **All `/api/cron/*` routes are guarded by a bearer token** and refuse to run at all if `CRON_SECRET` is unset.
-- Automated catalog records are saved only after Featherless verifies the scraped official page and returns its source type, title, and exact open deadline. The accepted `university`, `funder`, or `government` classification is retained in Postgres for auditing.
+- Automated catalog records are saved only after Gemini verifies the scraped official page and returns its source type, title, and exact open deadline. The accepted `university`, `funder`, or `government` classification is retained in Postgres for auditing.
 
 ---
 

@@ -1,25 +1,36 @@
+import { appendFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { Scholarship, UserProfile } from '@/app/types';
 import { queryDb } from '@/lib/db';
+import { generateText, geminiConfigured, geminiModel } from '@/lib/gemini';
 
-const FEATHERLESS_API_KEY = process.env.FEATHERLESS_API_KEY;
-const FEATHERLESS_API_URL = 'https://api.featherless.ai/v1/chat/completions';
 /**
- * Chosen on measured latency, not size. Llama-3.1-8B took ~17s on a trivial
- * prompt where this 72B model took ~4s — served capacity matters more than
- * parameter count here, and the bigger model is also better at the judgement
- * call in rule 3 (silence means open).
- */
-const DEFAULT_MODEL = 'Qwen/Qwen2.5-72B-Instruct';
-/**
- * The user waits on this to see Discover, so it fails over to the keyword
- * fallback rather than hanging. Without a signal, fetch waits indefinitely and
- * three retries could stack into minutes.
+ * Model family is chosen by GEMINI_MODEL (default gemini-3.6-flash). The filter
+ * is served to the user on Discover, so it fails over to the keyword fallback
+ * rather than hanging: without a signal, fetch waits indefinitely and three
+ * retries could stack into minutes.
  */
 const CALL_TIMEOUT_MS = 25_000;
 /** Whole-operation ceiling across all retries, so a bad run can't stack them. */
 const TOTAL_BUDGET_MS = 40_000;
 
 const CACHE_TTL_HOURS = 12;
+
+/**
+ * Append a line to logs/discipline-filter.log. Discover is a serverless route,
+ * so `console.log` dies with the process — a file on disk is the only way to
+ * look back at why a given profile saw (or didn't see) a scholarship.
+ */
+const FILTER_LOG_PATH = join(process.cwd(), 'logs', 'discipline-filter.log');
+
+function writeFilterLog(entry: string): void {
+  try {
+    mkdirSync(join(process.cwd(), 'logs'), { recursive: true });
+    appendFileSync(FILTER_LOG_PATH, entry + '\n', 'utf8');
+  } catch (error) {
+    console.warn('[discipline-filter] Could not write log:', error);
+  }
+}
 
 function getCacheKey(profile: UserProfile): string {
   // Cache is keyed on everything the prompt interpolates, so editing a profile
@@ -45,7 +56,7 @@ async function getCached(profile: UserProfile): Promise<string[] | null> {
     );
     return result.rows[0]?.scholarship_ids ?? null;
   } catch (error) {
-    console.warn('[featherless-filter] Cache read failed:', error);
+    console.warn('[discipline-filter] Cache read failed:', error);
     return null;
   }
 }
@@ -61,7 +72,7 @@ async function setCached(profile: UserProfile, ids: string[]): Promise<void> {
       [getCacheKey(profile), ids]
     );
   } catch (error) {
-    console.warn('[featherless-filter] Cache write failed:', error);
+    console.warn('[discipline-filter] Cache write failed:', error);
   }
 }
 
@@ -121,8 +132,8 @@ Example output: [1, 2, 5, 9, 14]`;
 /**
  * Pull the JSON array of selected item numbers out of a model reply.
  *
- * Tolerant by design: small models wrap arrays in prose or markdown fences even
- * when told not to, and a parse failure here costs a full retry.
+ * Tolerant by design: models wrap arrays in prose or markdown fences even when
+ * told not to, and a parse failure here costs a full retry.
  */
 function extractJsonArray(content: string): number[] | null {
   const patterns = [
@@ -162,10 +173,9 @@ function extractJsonArray(content: string): number[] | null {
   return null;
 }
 
-async function callFeatherlessWithRetry(
+async function callGeminiWithRetry(
   prompt: string,
   scholarships: Scholarship[],
-  profile: UserProfile,
   maxRetries: number = 3
 ): Promise<string[] | null> {
   const startedAt = Date.now();
@@ -174,40 +184,23 @@ async function callFeatherlessWithRetry(
     // Retries are only worth it while someone is still waiting. Past the budget,
     // hand over to the keyword fallback instead of starting another 25s call.
     if (Date.now() - startedAt > TOTAL_BUDGET_MS) {
-      console.warn('[featherless-filter] Budget spent; falling back to keywords');
+      console.warn('[discipline-filter] Budget spent; falling back to keywords');
       return null;
     }
 
     try {
-      const response = await fetch(FEATHERLESS_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${FEATHERLESS_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: DEFAULT_MODEL,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.1,
-          max_tokens: 2000,
-        }),
-        signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+      const content = await generateText(prompt, {
+        model: geminiModel(),
+        temperature: 0.1,
+        maxOutputTokens: 2000,
+        timeoutMs: CALL_TIMEOUT_MS,
       });
 
-      if (!response.ok) {
-        if (attempt < maxRetries) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-        continue;
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '';
+      writeFilterLog(`  MODEL REPLY (attempt ${attempt}):\n${content}`);
 
       const parsed = extractJsonArray(content);
       if (parsed !== null) {
-        // Model now returns 1-indexed numbers, so map them back to IDs
+        // The model returns 1-indexed numbers, so map them back to IDs.
         return parsed
           .map((item) => {
             const idx = parseInt(String(item), 10);
@@ -231,21 +224,20 @@ async function callFeatherlessWithRetry(
   return null;
 }
 
-async function callFeatherless(
+async function callGemini(
   prompt: string,
-  scholarships: Scholarship[],
-  profile: UserProfile
+  scholarships: Scholarship[]
 ): Promise<string[] | null> {
-  if (!FEATHERLESS_API_KEY) {
+  if (!geminiConfigured()) {
     return null;
   }
 
-  return callFeatherlessWithRetry(prompt, scholarships, profile, 3);
+  return callGeminiWithRetry(prompt, scholarships, 3);
 }
 
 /**
- * Filter scholarships by discipline using Featherless AI.
- * Falls back to keyword-based filtering if AI is unavailable.
+ * Filter scholarships by discipline using Gemini.
+ * Falls back to keyword-based filtering if the AI is unavailable.
  * Results are cached for 12 hours per user profile.
  */
 export async function filterByDiscipline(
@@ -256,20 +248,33 @@ export async function filterByDiscipline(
     return [];
   }
 
+  const titles = new Map(scholarships.map((s) => [s.id, s.title]));
+  const describe = (ids: string[]) => ids.map((id) => titles.get(id) ?? id);
+
+  writeFilterLog(
+    `[${new Date().toISOString()}] discipline=${profile.discipline} degree=${profile.targetDegree} career="${profile.careerGoal}" — ${scholarships.length} candidates`
+  );
+
   // Check cache first
   const cachedIds = await getCached(profile);
   if (cachedIds) {
+    writeFilterLog(`  → CACHE HIT: ${cachedIds.length} kept`);
     const idSet = new Set(cachedIds);
     return scholarships.filter((s) => idSet.has(s.id));
   }
 
   // Build the prompt
   const prompt = buildPrompt(scholarships, profile);
+  writeFilterLog(`  PROMPT:\n${prompt}\n${'-'.repeat(60)}`);
 
-  // Call Featherless AI
-  const relevantIds = await callFeatherless(prompt, scholarships, profile);
+  // Call Gemini
+  const relevantIds = await callGemini(prompt, scholarships);
 
   if (relevantIds) {
+    const kept = describe(relevantIds);
+    writeFilterLog(
+      `  → AI RESULT: ${kept.length}/${scholarships.length} kept\n${JSON.stringify(kept, null, 2)}\n${'='.repeat(60)}`
+    );
     const idSet = new Set(relevantIds);
     await setCached(profile, relevantIds);
     return scholarships.filter((s) => idSet.has(s.id));
@@ -277,14 +282,14 @@ export async function filterByDiscipline(
 
   // Fallback: keyword-based filtering. Deliberately not cached — it costs
   // nothing to recompute, and pinning a degraded result for 12h would outlast
-  // whatever transient Featherless failure produced it.
+  // whatever transient failure produced it.
   const fallbackIds = fallbackFilter(scholarships, profile);
+  writeFilterLog(`  → FALLBACK (keyword): ${fallbackIds.length}/${scholarships.length} kept`);
   const fallbackSet = new Set(fallbackIds);
   return scholarships.filter((s) => fallbackSet.has(s.id));
 }
 
 function fallbackFilter(scholarships: Scholarship[], profile: UserProfile): string[] {
-
   return scholarships
     .filter((s) => {
       const text = `${s.title} ${s.description} ${s.eligibility.join(' ')}`.toLowerCase();

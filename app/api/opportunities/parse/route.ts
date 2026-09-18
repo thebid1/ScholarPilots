@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { generateJson, geminiConfigured, geminiModel } from '@/lib/gemini';
 
 /**
  * Structures a pasted scholarship listing into a draft opportunity.
@@ -11,12 +12,10 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const FEATHERLESS_API_URL = 'https://api.featherless.ai/v1/chat/completions';
 /**
- * Same model as the search route. Chosen for latency on extraction workloads;
- * pasted text is usually under 3k chars so the context is small.
+ * Uses the shared Gemini extraction model (GEMINI_MODEL / GEMINI_EXTRACTION_MODEL).
+ * Pasted text is usually under 3k chars so the context is small.
  */
-const MODEL = 'Qwen/Qwen2.5-72B-Instruct';
 const MODEL_TIMEOUT_MS = 45_000;
 const MAX_INPUT_CHARS = 20_000;
 
@@ -44,10 +43,10 @@ Rules:
 /**
  * Force the model's JSON into the shape the confirm form expects.
  *
- * Gemini enforced this with a response schema; json_object does not, so a
- * missing key or a string where an array belongs would reach the client and
- * crash the form on `.trim()`. Anything absent is reported as uncertain rather
- * than silently blanked, so the user sees which fields need their attention.
+ * responseMimeType: application/json still lets a key go missing or arrive with
+ * the wrong type, which would reach the client and crash the form on `.trim()`.
+ * Anything absent is reported as uncertain rather than silently blanked, so the
+ * user sees which fields need their attention.
  */
 function normalizeDraft(raw: Record<string, unknown>) {
   const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
@@ -87,10 +86,9 @@ function normalizeDraft(raw: Record<string, unknown>) {
 }
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.FEATHERLESS_API_KEY;
-  if (!apiKey) {
+  if (!geminiConfigured()) {
     return NextResponse.json(
-      { error: 'AI parsing is unavailable — FEATHERLESS_API_KEY is not set.' },
+      { error: 'AI parsing is unavailable — Gemini is not configured.' },
       { status: 503 }
     );
   }
@@ -110,40 +108,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(FEATHERLESS_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: `${EXTRACTION_PROMPT}\n\nText:\n"""\n${text.slice(0, MAX_INPUT_CHARS)}\n"""`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0,
-        max_tokens: 2000,
-      }),
-      signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
-    });
+    const parsed = await generateJson(
+      `${EXTRACTION_PROMPT}\n\nText:\n"""\n${text.slice(0, MAX_INPUT_CHARS)}\n"""`,
+      { model: geminiModel(), temperature: 0, maxOutputTokens: 2000, timeoutMs: MODEL_TIMEOUT_MS }
+    );
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      console.error(`[parse] Featherless ${response.status}: ${detail.slice(0, 200)}`);
-      return NextResponse.json({ error: 'Could not read that listing. Try again.' }, { status: 502 });
-    }
-
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content;
-    if (!raw) {
+    if (!parsed) {
       return NextResponse.json({ error: 'The AI returned nothing. Try again.' }, { status: 502 });
     }
 
-    return NextResponse.json({ draft: normalizeDraft(JSON.parse(raw)) });
+    return NextResponse.json({ draft: normalizeDraft(parsed) });
   } catch (error) {
     console.error('[parse] Failed to structure pasted opportunity:', error);
     return NextResponse.json({ error: 'Could not read that listing. Try again.' }, { status: 502 });

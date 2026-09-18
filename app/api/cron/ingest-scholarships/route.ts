@@ -23,8 +23,11 @@ export async function GET(request: NextRequest) {
   if (request.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!process.env.FIRECRAWL_API_KEY || !process.env.FEATHERLESS_API_KEY) {
-    return NextResponse.json({ error: 'Firecrawl and Featherless are not configured' }, { status: 503 });
+  if (!process.env.FIRECRAWL_API_KEY || !process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_CLOUD_PROJECT) {
+    return NextResponse.json(
+      { error: 'Firecrawl or Gemini (Agent Platform) are not configured' },
+      { status: 503 }
+    );
   }
 
   // A manual run can ask for a smaller cap than the daily one, for a cautious
@@ -36,8 +39,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(await runIngestion({ maxCredits }));
   } catch (error) {
     console.error('[cron] Scholarship ingestion failed:', error);
-    // The message carries the budget state, which is the thing worth knowing when
-    // a run refuses to start.
     return NextResponse.json(
       { error: 'Scholarship ingestion failed', detail: String(error).slice(0, 300) },
       { status: 500 }
