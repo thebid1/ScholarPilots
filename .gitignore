@@ -55,6 +55,9 @@ yarn-error.log*
 gen-lang-client-*.json
 serviceaccount.json
 
+# Local-only / scratch scripts — not part of the shipped repo
+scripts/test-gemini.ts
+
 # vercel
 .vercel
 
